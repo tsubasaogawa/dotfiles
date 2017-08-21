@@ -1,0 +1,13 @@
+# U で pull
+bind generic U ?git pull %(remote)
+
+# P で remote への push
+bind generic P ?git push -u %(remote) %(repo:head)
+
+# B でブランチを作成してそのブランチに移動 (checkout -b)
+bind main B      ?git checkout -b "%(prompt Enter branch name: )" %(branch)
+bind refs B      ?git checkout -b "%(prompt Enter branch name: )" %(branch)
+bind main <Esc>b ?git checkout -b "%(prompt Enter branch name: )" %(commit)
+
+# グラフ表示の文字化け対応
+set line-graphics = ascii
