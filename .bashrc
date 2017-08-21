@@ -7,4 +7,5 @@ fi
 
 # User specific aliases and functions
 alias histless='history | less'
+alias histgrep='history | grep'
 alias less='/usr/share/vim/vim74/macros/less.sh'
