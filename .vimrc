@@ -14,6 +14,13 @@ set shiftwidth=2
 set cindent
 set showcmd
 set laststatus=2
+set fenc=utf-8
+set virtualedit=onemore
+set wildmode=list:longest
+set ignorecase
+set smartcase
+set wrapscan
+nmap <Esc><Esc> :nohlsearch<CR><Esc>
 
 " Note: Skip initialization for vim-tiny or vim-small.
  if 0 | endif
