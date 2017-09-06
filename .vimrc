@@ -25,6 +25,10 @@ set hidden
 
 nmap <Esc><Esc> :nohlsearch<CR><Esc>
 
+" :W sudo saves the file
+" (useful for handling the permission-denied error)
+command W w !sudo tee % > /dev/null
+
 " Note: Skip initialization for vim-tiny or vim-small.
  if 0 | endif
 
