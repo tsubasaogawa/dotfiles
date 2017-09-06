@@ -20,3 +20,6 @@ GIT_PS1_SHOWUNTRACKEDFILES=
 GIT_PS1_SHOWSTASHSTATE=1
 
 export PS1='\n\[\e[1;32m\]\u\[\e[0;32m\]@\h \[\e[0;33m\]\w\[\e[7;33m\]$(__git_ps1)\[\e[m\]\n\$ '
+
+# remain command history
+export HISTSIZE=100000
