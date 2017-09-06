@@ -20,6 +20,9 @@ set wildmode=list:longest
 set ignorecase
 set smartcase
 set wrapscan
+set display=lastline
+set hidden
+
 nmap <Esc><Esc> :nohlsearch<CR><Esc>
 
 " Note: Skip initialization for vim-tiny or vim-small.
