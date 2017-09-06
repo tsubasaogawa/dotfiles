@@ -9,5 +9,8 @@ bind main B      ?git checkout -b "%(prompt Enter branch name: )" %(branch)
 bind refs B      ?git checkout -b "%(prompt Enter branch name: )" %(branch)
 bind main <Esc>b ?git checkout -b "%(prompt Enter branch name: )" %(commit)
 
+# Ctrl + C で commit amend
+bind stage ^C    !git commit --amend --allow-empty
+
 # グラフ表示の文字化け対応
 set line-graphics = ascii
