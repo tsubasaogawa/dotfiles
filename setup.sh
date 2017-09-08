@@ -4,29 +4,32 @@ function showmsg() {
   echo "$1" 1>&2
 }
 
-showmsg 'set git-completion / git-prompt'
+showmsg '# set git-completion / git-prompt'
 for file in 'git-completion.bash' 'git-prompt.sh'; do
   # skip if file exists
-  [[ -f ~/${file} ]] && showmsg "~/${file} exists" && continue
+  [[ -f ~/$file ]] && showmsg "~/$file exists" && continue
 
   # get path from the result of head
-  local fullpath=$(sudo find / -name ${file} | head -1)
+  showmsg "find ${file}..."
+  fullpath=$(sudo find / -name $file | head -1)
+  [[ $fullpath = '' ]] && showmsg "no $file exists" && continue
 
   # copy
-  cp -pr ${fullpath} ~
-  showmsg "copied ${fullpath} to ~"
+  cp -pr $fullpath ~
+  showmsg "copied $fullpath to ~"
 done
 
-showmsg 'create symbolic links'
-for file in ls 'core/*'; do
+showmsg '# create symbolic links'
+readonly core_dir="${PWD}/core"
+for file in $(ls -A $core_dir); do
   # get basename
-  local filename=$(basename ${file})
+  filename=$(basename $file)
   
   # skip if symbolic link exists
-  [[ -f ~/${filename} ]] && showmsg "~/${filename} exists" && continue
+  [[ -f ~/$filename ]] && showmsg "~/$filename exists" && continue
 
-  ln -s ${file} ~/${filename}
-  showmsg "created symbolic link ~/${filename}"
+  ln -s "${core_dir}/$file" ~/$filename
+  showmsg "created symbolic link ~/$filename"
 done
 
 showmsg 'done.'
