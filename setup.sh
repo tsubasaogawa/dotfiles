@@ -32,5 +32,9 @@ for file in $(ls -A $core_dir); do
   showmsg "created symbolic link ~/$filename"
 done
 
+showmsg '# install NeoBundle'
+curl --silent https://raw.githubusercontent.com/Shougo/neobundle.vim/master/bin/install.sh > /tmp/install.sh
+sh /tmp/install.sh
+
 showmsg 'done.'
 exit 0
