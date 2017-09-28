@@ -29,6 +29,12 @@ nmap <Esc><Esc> :nohlsearch<CR><Esc>
 " (useful for handling the permission-denied error)
 command W w !sudo tee % > /dev/null
 
+" back to the last position when close the file
+augroup vimrcEx
+  au BufRead * if line("'\"") > 0 && line("'\"") <= line("$") |
+  \ exe "normal g`\"" | endif
+augroup END
+
 " Note: Skip initialization for vim-tiny or vim-small.
  if 0 | endif
 
