@@ -20,7 +20,7 @@ for file in 'git-completion.bash' 'git-prompt.sh'; do
 done
 
 showmsg '# create symbolic links'
-readonly core_dir="${PWD}/core"
+readonly core_dir="$(dirname $0)/core"
 for file in $(ls -A $core_dir); do
   # get basename
   filename=$(basename $file)
