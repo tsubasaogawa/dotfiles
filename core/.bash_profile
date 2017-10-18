@@ -7,7 +7,13 @@ fi
 
 # User specific environment and startup programs
 PATH=$PATH:$HOME/bin
+PATH="/home/vagrant/.pyenv/bin:$PATH"
+PATH="/usr/local/heroku/bin:$PATH"
 export PATH
+export PYTHONPATH=/home/vagrant/work/chainer:$PYTHONPATH
+
+eval "$(pyenv init -)"
+eval "$(pyenv virtualenv-init -)"
 
 # git-completion / git-prompt
 source ./git-completion.bash
