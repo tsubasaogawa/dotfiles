@@ -59,12 +59,7 @@ augroup END
   NeoBundle 'itchyny/lightline.vim'
 
   " ColorScheme
-  NeoBundle 'jeetsukumaran/vim-nefertiti'
   NeoBundle 'jacoborus/tender.vim'
-  NeoBundle 'gosukiwi/vim-atom-dark'
-  NeoBundle 'aereal/vim-colors-japanesque'
-  NeoBundle 'romainl/Apprentice'
-  NeoBundle 'raphamorim/lucario'
  call neobundle#end()
 
  " Required:
