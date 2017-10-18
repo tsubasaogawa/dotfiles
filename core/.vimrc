@@ -65,6 +65,7 @@ augroup END
 
   " ColorScheme
   NeoBundle 'jacoborus/tender.vim'
+  NeoBundle 'romainl/Apprentice'
  call neobundle#end()
 
  " Required:
