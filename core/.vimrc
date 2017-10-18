@@ -16,7 +16,7 @@ set showcmd
 set laststatus=2
 set fenc=utf-8
 set virtualedit=onemore
-set wildmode=list:longest
+set wildmenu wildmode=list:longest
 set ignorecase
 set smartcase
 set wrapscan
@@ -24,6 +24,11 @@ set display=lastline
 set hidden
 
 nmap <Esc><Esc> :nohlsearch<CR><Esc>
+
+" restore yank register
+noremap PP "0p
+" do not overwrite yank register when delete a char pressing 'x'
+noremap x "_x
 
 " :W sudo saves the file
 " (useful for handling the permission-denied error)
