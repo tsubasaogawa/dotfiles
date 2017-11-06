@@ -31,6 +31,7 @@ for file in $(ls -A $core_dir); do
     [[ $ans != 'Y' ]] && continue
     # create backup
     mv ~/$filename{,.$(date +%Y%m%d)}
+    showmsg "created backup ~/$filename.$(date +%Y%m%d)"
   fi
 
   ln -s "${core_dir}/$file" ~/$filename

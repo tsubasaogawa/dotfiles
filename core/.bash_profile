@@ -25,8 +25,12 @@ if [ -f ~/.bashrc ]; then
 fi
 
 # User specific environment and startup programs
-PATH=$PATH:$HOME/bin:$HOME/.pyenv/bin
+PATH=$PATH:$HOME/bin
+PATH="$HOME/.pyenv/bin:$PATH"
+PATH="/usr/local/heroku/bin:$PATH"
 export PATH
+export PYTHONPATH=/home/vagrant/work/chainer:$PYTHONPATH
+
 eval "$(pyenv init -)"
 eval "$(pyenv virtualenv-init -)"
 
