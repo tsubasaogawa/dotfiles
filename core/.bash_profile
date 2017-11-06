@@ -25,8 +25,10 @@ if [ -f ~/.bashrc ]; then
 fi
 
 # User specific environment and startup programs
-PATH=$PATH:$HOME/bin
+PATH=$PATH:$HOME/bin:$HOME/.pyenv/bin
 export PATH
+eval "$(pyenv init -)"
+eval "$(pyenv virtualenv-init -)"
 
 # git-completion / git-prompt
 source ./git-completion.bash
