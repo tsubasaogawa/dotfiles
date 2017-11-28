@@ -14,3 +14,10 @@ bind generic <Ctrl-A> !git commit --amend
 
 # グラフ表示の文字化け対応
 set line-graphics = ascii
+
+# 行数表示
+set pager-view  = line-number:yes,interval=1 text
+set stage-view  = line-number:yes,interval=1 text
+set log-view    = line-number:yes,interval=1 text
+set blob-view   = line-number:yes,interval=1 text
+set diff-view   = line-number:yes,interval=1 text:yes,commit-title-overflow=no
