@@ -11,5 +11,5 @@ $ ./setup.sh
 
 * Copy bash-completion and bash-prompt to ${HOME}
 * Make symbolic links of dotfiles (which included in `core` directory)
-    * Backup it if needed
+    * Backup original ones if needed
 * Install NeoBundle.vim Plugin
