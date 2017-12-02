@@ -13,13 +13,12 @@ for file in 'git-completion.bash' 'git-prompt.sh'; do
   [[ -f ~/$file ]] && showmsg "~/$file exists" && continue
 
   # get path from the result of head
-  fullpath=$(sudo find / -name $file | head -1)
-  [[ $fullpath = '' ]] && showmsg "no $file exists" && continue
   showmsg "finding ${file}..."
+  fullpath=$(sudo find / -name "$file" | head -1)
+  [[ -z $fullpath ]] && showmsg "no $file exists" && continue
 
   # copy
-  cp -pr $fullpath ~
-  showmsg "copied $fullpath to ~"
+  cp -p "$fullpath" ~
   showmsg "copied $fullpath to your home directory"
 done
 
@@ -44,7 +43,8 @@ done
 
 showmsg '# install NeoBundle'
 curl --silent https://raw.githubusercontent.com/Shougo/neobundle.vim/master/bin/install.sh > /tmp/install.sh
-sh /tmp/install.sh
+sh /tmp/install.sh | tee "/tmp/NeoBundle.log.$(date +%Y%m%d%H%M)" | grep 'Complete setup NeoBundle'
+[[ $? -ne 0 ]] && showmsg "error occured. please refer to /tmp/NeoBundle.log.$(date +%Y%m%d%H%M)" && exit 1
 
 showmsg 'setup done.'
 exit 0
