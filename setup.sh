@@ -36,6 +36,10 @@ for core_rcfile in $(find "$core_dir" -name '.*' -type f); do
     # create backup
     mv $destination_rcfile{,.$(date +%Y%m%d)}
     showmsg "created backup ${destination_rcfile}.$(date +%Y%m%d)"
+  # if broken symbolic link exists
+  elif ls "$rcfilename" >/dev/null 2>&1 && find ~/ -maxdepth 1 -name "$rcfilename" -xtype l >/dev/null 2>&1; then
+    rm -f $destination_rcfile
+    showmsg "deleted broken symbolic link $destination_rcfile"
   fi
 
   ln -s "$core_rcfile" "$destination_rcfile"
