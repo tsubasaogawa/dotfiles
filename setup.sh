@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Provisioning script for dotfiles
+# No args required
+
 function showmsg() {
   echo "$1" 1>&2
 }
@@ -10,13 +13,14 @@ for file in 'git-completion.bash' 'git-prompt.sh'; do
   [[ -f ~/$file ]] && showmsg "~/$file exists" && continue
 
   # get path from the result of head
-  showmsg "find ${file}..."
   fullpath=$(sudo find / -name $file | head -1)
   [[ $fullpath = '' ]] && showmsg "no $file exists" && continue
+  showmsg "finding ${file}..."
 
   # copy
   cp -pr $fullpath ~
   showmsg "copied $fullpath to ~"
+  showmsg "copied $fullpath to your home directory"
 done
 
 showmsg '# create symbolic links'
@@ -35,12 +39,12 @@ for file in $(ls -A $core_dir); do
   fi
 
   ln -s "${core_dir}/$file" ~/$filename
-  showmsg "created symbolic link ~/$filename"
+  [[ $? -eq 0 ]] && showmsg "created symbolic link $rcfilename to your home directory"
 done
 
 showmsg '# install NeoBundle'
 curl --silent https://raw.githubusercontent.com/Shougo/neobundle.vim/master/bin/install.sh > /tmp/install.sh
 sh /tmp/install.sh
 
-showmsg 'done.'
+showmsg 'setup done.'
 exit 0
