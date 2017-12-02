@@ -23,21 +23,22 @@ for file in 'git-completion.bash' 'git-prompt.sh'; do
 done
 
 showmsg '# create symbolic links'
-readonly core_dir="$(dirname $0)/core"
-for file in $(ls -A $core_dir); do
+readonly core_dir="$(cd $(dirname $0) && pwd)/core"
+for core_rcfile in $(find "$core_dir" -name '.*' -type f); do
   # get basename
-  filename=$(basename $file)
-  
+  rcfilename=$(basename "$core_rcfile")
+  destination_rcfile=~/$rcfilename
+
   # if symbolic link exists
-  if [[ -f ~/$filename ]]; then
-    read -p "~/$filename exists. replace? (Y/n)" ans
-    [[ $ans != 'Y' ]] && continue
+  if [[ -e "$destination_rcfile" ]]; then
+    read -p "$destination_rcfile exists. replace? (Y/n)" ans
+    [[ "x$ans" != 'xY' ]] && continue
     # create backup
-    mv ~/$filename{,.$(date +%Y%m%d)}
-    showmsg "created backup ~/$filename.$(date +%Y%m%d)"
+    mv $destination_rcfile{,.$(date +%Y%m%d)}
+    showmsg "created backup ${destination_rcfile}.$(date +%Y%m%d)"
   fi
 
-  ln -s "${core_dir}/$file" ~/$filename
+  ln -s "$core_rcfile" "$destination_rcfile"
   [[ $? -eq 0 ]] && showmsg "created symbolic link $rcfilename to your home directory"
 done
 
