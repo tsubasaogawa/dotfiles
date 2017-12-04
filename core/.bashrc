@@ -12,3 +12,11 @@ alias less='/usr/share/vim/vim74/macros/less.sh'
 alias gre@='grep'
 alias pd='pushd'
 alias ds='dirs -v'
+
+function pds() {
+  ! which peco >/dev/null 2>&1 && echo 'please install peco' && return 1
+  local pushd_number=$(dirs -v | peco | perl -anE 'say $F[0]')
+  [[ "x$pushd_number" = "x" ]] && return 1
+  pushd +$pushd_number
+  return $?
+}
