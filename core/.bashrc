@@ -10,7 +10,8 @@ alias histless='history | less'
 alias histgrep='history | grep'
 alias less='/usr/share/vim/vim74/macros/less.sh'
 alias gre@='grep'
-alias cd='pushd >/dev/null'
+alias switch_gcc5='scl enable devtoolset-4 bash'
+alias pd='pushd >/dev/null'
 alias ds='dirs -v'
 
 function pds() {
