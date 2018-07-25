@@ -14,8 +14,9 @@ alias switch_gcc5='scl enable devtoolset-4 bash'
 alias pd='pushd >/dev/null'
 alias ds='dirs -v'
 
-# stop screen lock
+# stop screen lock & enable i-search
 stty stop undef
+stty start undef
 
 function pds() {
   ! which peco >/dev/null 2>&1 && echo 'please install peco' && return 1
