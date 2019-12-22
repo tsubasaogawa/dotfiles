@@ -8,7 +8,7 @@ fi
 # User specific aliases and functions
 alias histless='history | less'
 alias histgrep='history | grep'
-alias less='/usr/share/vim/vim74/macros/less.sh'
+# alias less='/usr/share/vim/vim74/macros/less.sh'
 alias gre@='grep'
 alias switch_gcc5='scl enable devtoolset-4 bash'
 alias pd='pushd >/dev/null'
