@@ -62,6 +62,7 @@ augroup END
  " Note: You don't set neobundle setting in .gvimrc!
 
   NeoBundle 'itchyny/lightline.vim'
+  NeoBundle 'rust-lang/rust.vim'
 
   " ColorScheme
   NeoBundle 'jacoborus/tender.vim'
@@ -79,3 +80,6 @@ syntax enable
 set t_Co=256
 colorscheme apprentice
 let g:lightline = { 'colorscheme': 'tender' }
+
+" change indent type as filetype
+filetype plugin indent on
