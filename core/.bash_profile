@@ -25,13 +25,18 @@ if [ -f ~/.bashrc ]; then
 fi
 
 # User specific environment and startup programs
+export GOPATH="$HOME/go"
 PATH=$PATH:$HOME/bin
 PATH="/usr/local/heroku/bin:$PATH"
 PATH="$HOME/.anyenv/bin:$PATH"
+PATH="$HOME/.cargo/bin:$PATH"
+PATH="/opt/go/bin:$GOPATH/bin:$PATH"
 export PATH
 export PYTHONPATH=/home/vagrant/work/chainer:$PYTHONPATH
 
 eval "$(anyenv init -)"
+eval "$(pyenv virtualenv-init -)"
+eval "$(direnv hook bash)"
 
 # git-completion / git-prompt
 source ./git-completion.bash
@@ -47,3 +52,4 @@ export PS1='\n\[\e[1;32m\]\u\[\e[0;32m\]@\h \[\e[0;33m\]\w\[\e[7;33m\]$(__git_ps
 
 # remain command history
 export HISTSIZE=100000
+
