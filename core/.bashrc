@@ -6,6 +6,8 @@ if [ -f /etc/bashrc ]; then
 fi
 
 # User specific aliases and functions
+alias gre@='grep'
+alias switch_gcc5='scl enable devtoolset-4 bash'
 alias pd='pushd >/dev/null'
 alias ds='dirs -v'
 source ~/.local/share/bash-abbrev-alias/abbrev-alias.plugin.bash
@@ -14,6 +16,8 @@ abbrev-alias -c gps='git push origin @'
 abbrev-alias -c gpl='git pull'
 abbrev-alias -ge B='$(git symbolic-ref --short HEAD 2>/dev/null)'
 abbrev-alias -c ti='terraform init'
+
+alias rsyncp='rsync -C --filter=":- .gitignore" -acv'
 
 # stop screen lock & enable i-search
 stty stop undef

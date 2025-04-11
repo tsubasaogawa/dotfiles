@@ -26,17 +26,19 @@ if [ -f ~/.bashrc ]; then
 fi
 
 # User specific environment and startup programs
+export GOPATH="$HOME/go"
 PATH=$PATH:$HOME/bin
 PATH="$HOME/.local/lib/shellspec/bin:$PATH"
 PATH="$HOME/.ebcli-virtual-env/executables:$PATH"
 PATH="$HOME/.anyenv/bin:$PATH"
 PATH="$HOME/.slsenv/bin:$PATH"
 [[ -e /var/tmp/vscode_dir ]] && PATH="$(cat /var/tmp/vscode_dir | tr -d '\n'):$PATH"
+PATH="$HOME/.cargo/bin:$PATH"
+PATH="/opt/go/bin:$GOPATH/bin:$PATH"
 export PATH
 
 eval "$(anyenv init -)"
 export PATH="$GOENV_ROOT/shims:$GOPATH/bin:$PATH"
-
 export PIPX_DEFAULT_PYTHON="$(which python)"
 
 # git-completion / git-prompt
