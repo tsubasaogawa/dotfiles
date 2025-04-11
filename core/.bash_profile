@@ -5,7 +5,8 @@ IGNORE_PS1_DIR=()
 function __git_ps1_modified() {
   # No ignoring directory
   if [[ -z $IGNORE_PS1_DIR ]]; then
-    __git_ps1
+    # Delete space
+    __git_ps1 | cut -c 2-
     return 0
   fi
 
@@ -15,7 +16,7 @@ function __git_ps1_modified() {
   done
 
   # Current directory does not match ignore directories
-  __git_ps1
+  __git_ps1 | cut -c 2-
   return 0
 }
 
@@ -27,22 +28,26 @@ fi
 # User specific environment and startup programs
 export GOPATH="$HOME/go"
 PATH=$PATH:$HOME/bin
-PATH="/usr/local/heroku/bin:$PATH"
+PATH="$HOME/.local/lib/shellspec/bin:$PATH"
+PATH="$HOME/.ebcli-virtual-env/executables:$PATH"
 PATH="$HOME/.anyenv/bin:$PATH"
+PATH="$HOME/.slsenv/bin:$PATH"
+[[ -e /var/tmp/vscode_dir ]] && PATH="$(cat /var/tmp/vscode_dir | tr -d '\n'):$PATH"
 PATH="$HOME/.cargo/bin:$PATH"
 PATH="/opt/go/bin:$GOPATH/bin:$PATH"
 export PATH
-export PYTHONPATH=/home/vagrant/work/chainer:$PYTHONPATH
 
 eval "$(anyenv init -)"
-eval "$(pyenv virtualenv-init -)"
-eval "$(direnv hook bash)"
+export PATH="$GOENV_ROOT/shims:$GOPATH/bin:$PATH"
+export PIPX_DEFAULT_PYTHON="$(which python)"
 
 # git-completion / git-prompt
-source ./git-completion.bash
-source ./git-prompt.sh
+source $HOME/git-completion.bash
+source $HOME/git-prompt.sh
 
-# プロンプトに各種情報を表示
+. "$HOME/.asdf/asdf.sh"
+. "$HOME/.asdf/completions/asdf.bash"
+
 GIT_PS1_SHOWDIRTYSTATE=1
 GIT_PS1_SHOWUPSTREAM=1
 GIT_PS1_SHOWUNTRACKEDFILES=
@@ -53,3 +58,10 @@ export PS1='\n\[\e[1;32m\]\u\[\e[0;32m\]@\h \[\e[0;33m\]\w\[\e[7;33m\]$(__git_ps
 # remain command history
 export HISTSIZE=100000
 
+# terraform
+export TF_CLI_ARGS_plan="--parallelism=20"
+export TF_CLI_ARGS_apply="--parallelism=20"
+
+complete -C '/usr/local/bin/aws_completer' aws
+
+. "$HOME/.atuin/bin/env"
