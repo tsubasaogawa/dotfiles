@@ -1,0 +1,4 @@
+dotfiles.d/.env.secret
+dotfiles.d/.env.keys
+**/.git-completion.*sh
+**/.git-prompt.sh

@@ -4,6 +4,11 @@
   br = branch
   co = checkout
   ps = push
-
+  
 [color]
-  ui = true
+  ui = auto
+
+[color "status"]
+  added = yellow
+  changed = green
+  untracked = cyan

@@ -7,21 +7,6 @@ function showmsg() {
   echo "$1" 1>&2
 }
 
-showmsg '# set git-completion / git-prompt'
-for file in 'git-completion.bash' 'git-prompt.sh'; do
-  # skip if file exists
-  [[ -f ~/$file ]] && showmsg "~/$file exists" && continue
-
-  # get path from the result of head
-  showmsg "finding ${file}..."
-  fullpath=$(sudo find / -name "$file" | head -1)
-  [[ -z $fullpath ]] && showmsg "no $file exists" && continue
-
-  # copy
-  cp -p "$fullpath" ~
-  showmsg "copied $fullpath to your home directory"
-done
-
 showmsg '# create symbolic links'
 readonly core_dir="$(cd $(dirname $0) && pwd)/core"
 for core_rcfile in $(find "$core_dir" -name '.*' -type f); do
