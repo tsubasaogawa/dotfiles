@@ -17,6 +17,9 @@ PATH="/opt/go/bin:$GOPATH/bin:$PATH"
 PATH="$HOME/.slsenv/bin:$PATH"
 PATH="/mnt/c/Program\ Files/Docker/Docker/resources/bin:$PATH"
 PATH="/home/t_ogawa/.local/bin:$PATH"
+PATH="$HOME/.local/lib/shellspec/bin:$PATH"
+[[ -e /var/tmp/vscode_dir ]] && PATH="$(cat /var/tmp/vscode_dir | tr -d '\n'):$PATH"
+
 export PATH
 
 export NVM_DIR="$HOME/.nvm"
@@ -35,6 +38,7 @@ eval "$(pyenv virtualenv-init -)"
 eval "$(direnv hook bash)"
 
 . "$HOME/.asdf/asdf.sh"
+. "$HOME/.asdf/completions/asdf.bash"
 
 # User specific aliases and functions
 # alias less='/usr/share/vim/vim74/macros/less.sh'
@@ -44,10 +48,18 @@ alias pd='pushd >/dev/null'
 alias ds='dirs -v'
 
 alias rsyncp='rsync -C --filter=":- .gitignore" -acv'
+source ~/.local/share/bash-abbrev-alias/abbrev-alias.plugin.bash
+abbrev-alias -c asu='aws-sso-util login --force-refresh'
+abbrev-alias -c gps='git push origin @'
+abbrev-alias -c gpl='git pull'
+abbrev-alias -ge B='$(git symbolic-ref --short HEAD 2>/dev/null)'
+abbrev-alias -c ti='terraform init'
 
 # stop screen lock & enable i-search
 stty stop undef
 stty start undef
+
+shopt -s histappend
 
 function pds() {
   ! which peco >/dev/null 2>&1 && echo 'please install peco' && return 1
@@ -67,6 +79,16 @@ fi
 
 source $SCRIPT_DIR/.git-completion.bash
 source $SCRIPT_DIR/.git-prompt.sh
+
+complete -C '/usr/local/bin/aws_completer' aws
+
+. "$HOME/.atuin/bin/env"
+
+# The next line updates PATH for the Google Cloud SDK.
+if [ -f "$HOME/dev/yes/google-cloud-sdk/path.bash.inc" ]; then . "$HOME/dev/yes/google-cloud-sdk/path.bash.inc"; fi
+
+# The next line enables shell command completion for gcloud.
+if [ -f "$HOME/dev/yes/google-cloud-sdk/completion.bash.inc" ]; then . "$HOME/dev/yes/google-cloud-sdk/completion.bash.inc"; fi
 
 # Ignoring directories executing __git_ps1
 IGNORE_PS1_DIR=()
