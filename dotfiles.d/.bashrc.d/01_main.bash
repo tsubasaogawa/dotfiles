@@ -61,6 +61,20 @@ stty start undef
 
 shopt -s histappend
 
+function make() {
+  PLAN_FILE="/tmp/tfplan_$(date +%Y%m%d).log"
+
+  if [ "$1" = 'plan' ] || [ "$1" = 'apply' ]; then
+    date --iso-8601=seconds >> $PLAN_FILE
+    command make "$@" | tee -a $PLAN_FILE
+    echo -e "\n\n" >> $PLAN_FILE
+    # sed -ire 's/ESC\[[0-9]+m//g' $PLAN_FILE
+  else
+    command make "$@"
+  fi
+}
+export -f make
+
 function pds() {
   ! which peco >/dev/null 2>&1 && echo 'please install peco' && return 1
   local pushd_number=$(dirs -v | peco | perl -anE 'say $F[0]')
