@@ -125,8 +125,8 @@ function __git_ps1_modified() {
 if command -v dotenvx >/dev/null; then
   dotfiles_dir="${SCRIPT_DIR}/.."
   if [ -n "$dotfiles_dir" ] && [ -f "${dotfiles_dir}/.env" ]; then
-    eval "$(dotenvx get --format eval -f "${dotfiles_dir}/.env")"
-    eval "$(dotenvx get --format eval -f "${dotfiles_dir}/.env.secret.encrypted")"
+    export $(dotenvx get --format shell -f "${dotfiles_dir}/.env")
+    export $(dotenvx get --format shell -f "${dotfiles_dir}/.env.secret.encrypted")
   fi
 fi
 
