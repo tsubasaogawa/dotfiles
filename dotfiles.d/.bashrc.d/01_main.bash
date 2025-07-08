@@ -31,8 +31,6 @@ export NVM_DIR="$HOME/.nvm"
 export DISPLAY=$(cat /etc/resolv.conf | grep nameserver | awk '{print $2}'):0.0
 export LIBGL_ALWAYS_INDIRECT=true
 
-alias gemini='npx https://github.com/google-gemini/gemini-cli'
-
 eval "$(anyenv init -)"
 eval "$(pyenv virtualenv-init -)"
 eval "$(direnv hook bash)"
