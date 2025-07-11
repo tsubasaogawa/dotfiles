@@ -5,7 +5,8 @@ if [ -f /etc/bashrc ]; then
 	. /etc/bashrc
 fi
 
-SCRIPT_DIR=$(dirname $(readlink -f ${BASH_SOURCE[0]}))
+SCRIPT_FILE=$(readlink -f ${BASH_SOURCE[0]})
+SCRIPT_DIR=$(dirname $SCRIPT_FILE)
 
 # User specific environment and startup programs
 PATH=$PATH:$HOME/bin
@@ -122,13 +123,18 @@ function __git_ps1_modified() {
 # dotenvx
 if command -v dotenvx >/dev/null; then
   dotfiles_dir="${SCRIPT_DIR}/.."
-  if [ -n "$dotfiles_dir" ] && [ -f "${dotfiles_dir}/.env" ]; then
+  if [[ -n "$dotfiles_dir" ]] && [[ -f "${dotfiles_dir}/.env" ]]; then
     export $(dotenvx get --format shell -f "${dotfiles_dir}/.env")
     export $(dotenvx get --format shell -f "${dotfiles_dir}/.env.secret.encrypted")
+    [[ -f "${dotfiles_dir}/.env.local" ]] && export $(dotenvx get --format shell -f "${dotfiles_dir}/.env.local")
   fi
 fi
 
 . "$HOME/.atuin/bin/env"
+
+for f in $(ls ${SCRIPT_DIR}/*.*sh | grep -v ${SCRIPT_FILE}); do
+  source $f
+done
 
 [[ -f ~/.bash-preexec.sh ]] && source ~/.bash-preexec.sh
 eval "$(atuin init bash --disable-up-arrow)"
