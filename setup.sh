@@ -3,13 +3,11 @@
 # Provisioning script for dotfiles
 # No args required
 
-function showmsg() {
-  echo "$1" 1>&2
-}
+readonly DOTFILES_DIR_LIST=('.bashrc.d' '.bash_profile.d')
 
-showmsg '# create symbolic links'
-readonly core_dir="$(cd $(dirname $0) && pwd)/core"
-for core_rcfile in $(find "$core_dir" -name '.*' -type f); do
+echo '# create symbolic links'
+readonly core_dir="$(cd $(dirname $0) && pwd)/dotfiles.d"
+for core_rcfile in $DOTFILES_DIR_LIST; do
   # get basename
   rcfilename=$(basename "$core_rcfile")
   destination_rcfile=~/$rcfilename
@@ -20,21 +18,21 @@ for core_rcfile in $(find "$core_dir" -name '.*' -type f); do
     [[ "x$ans" != 'xY' ]] && continue
     # create backup
     mv $destination_rcfile{,.$(date +%Y%m%d)}
-    showmsg "created backup ${destination_rcfile}.$(date +%Y%m%d)"
+    echo "created backup ${destination_rcfile}.$(date +%Y%m%d)"
   # if broken symbolic link exists
   elif ls "$rcfilename" >/dev/null 2>&1 && find ~/ -maxdepth 1 -name "$rcfilename" -xtype l >/dev/null 2>&1; then
     rm -f $destination_rcfile
-    showmsg "deleted broken symbolic link $destination_rcfile"
+    echo "deleted broken symbolic link $destination_rcfile"
   fi
 
   ln -s "$core_rcfile" "$destination_rcfile"
-  [[ $? -eq 0 ]] && showmsg "created symbolic link $rcfilename to your home directory"
+  [[ $? -eq 0 ]] && echo "created symbolic link $rcfilename to your home directory"
 done
 
-showmsg '# install NeoBundle'
+echo '# install NeoBundle'
 curl --silent https://raw.githubusercontent.com/Shougo/neobundle.vim/master/bin/install.sh > /tmp/install.sh
 sh /tmp/install.sh | tee "/tmp/NeoBundle.log.$(date +%Y%m%d%H%M)" | grep 'Complete setup NeoBundle'
-[[ $? -ne 0 ]] && showmsg "error occured. please refer to /tmp/NeoBundle.log.$(date +%Y%m%d%H%M)" && exit 1
+[[ $? -ne 0 ]] && echo "error occured. please refer to /tmp/NeoBundle.log.$(date +%Y%m%d%H%M)" && exit 1
 
-showmsg 'setup done.'
+echo 'setup done.'
 exit 0
