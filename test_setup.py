@@ -78,7 +78,7 @@ class TestSetup(unittest.TestCase):
 
         # setup.pyのmain関数を実行
         with patch('__main__.__file__', str(self.test_dir / 'setup.py')):
-             setup.main()
+            setup.main()
 
         # シンボリックリンクが正しく作成されたか確認
         self.assertTrue((self.home_dir / ".bashrc").is_symlink())
