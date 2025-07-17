@@ -78,7 +78,7 @@ class TestSetup(unittest.TestCase):
 
         # Execute the main function of setup.py
         with patch('__main__.__file__', str(self.test_dir / 'setup.py')):
-             setup.main()
+            setup.main()
 
         # Check if the symlinks were created correctly
         self.assertTrue((self.home_dir / ".bashrc").is_symlink())
