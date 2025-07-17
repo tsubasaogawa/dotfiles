@@ -7,20 +7,20 @@ from pathlib import Path
 from unittest.mock import patch
 import tempfile
 
-# テスト対象のスクリプトをインポート
+# Import the script to be tested
 import setup
 
 class TestSetup(unittest.TestCase):
 
     def setUp(self):
-        """テストの前に一時的なディレクトリとファイルを作成する"""
+        """Create temporary directories and files before each test."""
         self.test_dir = Path(tempfile.mkdtemp())
         self.home_dir = self.test_dir / "home"
         self.dotfiles_dir = self.test_dir / "dotfiles.d"
         self.home_dir.mkdir()
         self.dotfiles_dir.mkdir()
 
-        # テスト用のdotfilesを作成
+        # Create dummy dotfiles for testing
         (self.dotfiles_dir / ".bashrc").touch()
         (self.dotfiles_dir / ".zshrc").touch()
         (self.dotfiles_dir / ".gitconfig").touch()
@@ -31,11 +31,11 @@ class TestSetup(unittest.TestCase):
 
 
     def tearDown(self):
-        """テストの後に一時的なディレクトリをクリーンアップする"""
+        """Clean up temporary directories after each test."""
         shutil.rmtree(self.test_dir)
 
     def test_create_symlink_new(self):
-        """新しいシンボリックリンクが正しく作成されることをテストする"""
+        """Test that a new symlink is created correctly."""
         src = self.dotfiles_dir / ".bashrc"
         dest = self.home_dir / ".bashrc"
         setup.create_symlink(src, dest)
@@ -43,10 +43,10 @@ class TestSetup(unittest.TestCase):
         self.assertEqual(os.readlink(dest), str(src))
 
     def test_create_symlink_backup(self):
-        """既存のファイルがバックアップされることをテストする"""
+        """Test that an existing file is backed up."""
         src = self.dotfiles_dir / ".bashrc"
         dest = self.home_dir / ".bashrc"
-        dest.write_text("original content")  # 既存のファイルを作成
+        dest.write_text("original content")  # Create an existing file
         setup.create_symlink(src, dest)
         backup_file = self.home_dir / ".bashrc.bak"
         self.assertTrue(backup_file.is_file())
@@ -55,32 +55,32 @@ class TestSetup(unittest.TestCase):
         self.assertEqual(os.readlink(dest), str(src))
 
     def test_create_symlink_overwrite(self):
-        """既存のシンボリックリンクが上書きされることをテストする"""
+        """Test that an existing symlink is overwritten."""
         src = self.dotfiles_dir / ".bashrc"
         dest = self.home_dir / ".bashrc"
         dummy_src = self.test_dir / "dummy"
         dummy_src.touch()
-        os.symlink(dummy_src, dest) # 既存のシンボリックリンクを作成
+        os.symlink(dummy_src, dest) # Create an existing symlink
 
         setup.create_symlink(src, dest)
         self.assertTrue(dest.is_symlink())
         self.assertEqual(os.readlink(dest), str(src))
-        self.assertFalse((self.home_dir / ".bashrc.bak").exists()) # バックアップが作成されないこと
+        self.assertFalse((self.home_dir / ".bashrc.bak").exists()) # Ensure no backup is created
 
     @patch('setup.Path.home')
     @patch('setup.Path.resolve')
     def test_main(self, mock_resolve, mock_home):
-        """main関数が正しくシンボリックリンクを作成することをテストする"""
-        # Path.home() と Path.resolve() をモックして、テストディレクトリを指すようにする
+        """Test that the main function creates symlinks correctly."""
+        # Mock Path.home() and Path.resolve() to point to the test directory
         mock_home.return_value = self.home_dir
-        # __file__ の親ディレクトリをモック
+        # Mock the parent directory of __file__
         mock_resolve.return_value = self.test_dir
 
-        # setup.pyのmain関数を実行
+        # Execute the main function of setup.py
         with patch('__main__.__file__', str(self.test_dir / 'setup.py')):
              setup.main()
 
-        # シンボリックリンクが正しく作成されたか確認
+        # Check if the symlinks were created correctly
         self.assertTrue((self.home_dir / ".bashrc").is_symlink())
         self.assertEqual(os.readlink(self.home_dir / ".bashrc"), str(self.dotfiles_dir / ".bashrc"))
 

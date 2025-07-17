@@ -5,37 +5,37 @@ from pathlib import Path
 
 def create_symlink(src: Path, dest: Path):
     """
-    シンボリックリンクを作成する。
+    Creates a symbolic link.
 
-    - dest がシンボリックリンクの場合は上書きする。
-    - dest がファイルまたはディレクトリの場合はバックアップを作成してから作成する。
-    - dest が存在しない場合は新規に作成する。
+    - If dest is a symlink, it will be overwritten.
+    - If dest is a file or directory, a backup will be created before creating the symlink.
+    - If dest does not exist, a new symlink will be created.
     """
     if dest.is_symlink():
-        # 既存のシンボリックリンクは上書き
+        # Overwrite existing symlink
         dest.unlink()
         os.symlink(src, dest)
         print(f"Updated symlink: {dest} -> {src}")
     elif dest.exists():
-        # 既存のファイルはバックアップを作成
+        # Backup existing file
         backup_path = Path(f"{dest}.bak")
         dest.rename(backup_path)
         print(f"Backed up existing file: {dest} -> {backup_path}")
         os.symlink(src, dest)
         print(f"Created symlink: {dest} -> {src}")
     else:
-        # 新規作成
+        # Create new symlink
         os.symlink(src, dest)
         print(f"Created symlink: {dest} -> {src}")
 
 def main():
     """
-    dotfilesのセットアップを実行する。
+    Executes the dotfiles setup.
     """
     dotfiles_dir = Path(__file__).parent.resolve() / "dotfiles.d"
     home_dir = Path.home()
 
-    # .dotfiles.d/.*rc と .gitconfig を処理
+    # Process .dotfiles.d/.*rc and .gitconfig
     for f in dotfiles_dir.glob(".*rc"):
         if f.is_file():
             create_symlink(f, home_dir / f.name)
@@ -44,7 +44,7 @@ def main():
     if gitconfig_path.is_file():
         create_symlink(gitconfig_path, home_dir / ".gitconfig")
 
-    # .dotfiles.d/.*.d/main.* を処理
+    # Process .dotfiles.d/.*.d/main.*
     for d in dotfiles_dir.glob(".*.d"):
         if d.is_dir():
             try:
@@ -52,7 +52,7 @@ def main():
                 dest_filename = d.name.removesuffix('.d')
                 create_symlink(main_file, home_dir / dest_filename)
             except StopIteration:
-                # main.* ファイルが見つからない場合は何もしない
+                # Do nothing if main.* file is not found
                 continue
 
     print("Dotfiles setup complete.")
