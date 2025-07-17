@@ -4,3 +4,4 @@ dotfiles.d/.env.local
 dotfiles.d/**/*_local.*sh
 **/.git-completion.*sh
 **/.git-prompt.sh
+__pycache__
