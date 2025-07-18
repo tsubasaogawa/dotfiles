@@ -95,6 +95,11 @@ source $SCRIPT_DIR/.git-prompt.sh
 
 complete -C '/usr/local/bin/aws_completer' aws
 
+# diff-highlight
+if ! which diff-highlight >/dev/null; then
+  $SCRIPT_DIR/install-diff-highlight.bash || true
+fi
+
 # The next line updates PATH for the Google Cloud SDK.
 if [ -f "$HOME/dev/yes/google-cloud-sdk/path.bash.inc" ]; then . "$HOME/dev/yes/google-cloud-sdk/path.bash.inc"; fi
 
