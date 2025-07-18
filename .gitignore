@@ -1,7 +1,8 @@
 dotfiles.d/.env.secret
 dotfiles.d/.env.keys
 dotfiles.d/.env.local
-dotfiles.d/**/*.local.*sh
+dotfiles.d/**/*.local
+dotfiles.d/**/*_local.*sh
 **/.git-completion.*sh
 **/.git-prompt.sh
 __pycache__

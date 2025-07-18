@@ -3,6 +3,7 @@
 import os
 from pathlib import Path
 
+
 def create_symlink(src: Path, dest: Path):
     """
     Creates a symbolic link.
@@ -28,6 +29,7 @@ def create_symlink(src: Path, dest: Path):
         os.symlink(src, dest)
         print(f"Created symlink: {dest} -> {src}")
 
+
 def main():
     """
     Executes the dotfiles setup.
@@ -35,27 +37,24 @@ def main():
     dotfiles_dir = Path(__file__).parent.resolve() / "dotfiles.d"
     home_dir = Path.home()
 
-    # Process .dotfiles.d/.*rc and .gitconfig
+    # Process .dotfiles.d/.*rc
     for f in dotfiles_dir.glob(".*rc"):
         if f.is_file():
             create_symlink(f, home_dir / f.name)
-
-    gitconfig_path = dotfiles_dir / ".gitconfig"
-    if gitconfig_path.is_file():
-        create_symlink(gitconfig_path, home_dir / ".gitconfig")
 
     # Process .dotfiles.d/.*.d/main.*
     for d in dotfiles_dir.glob(".*.d"):
         if d.is_dir():
             try:
                 main_file = next(d.glob("main.*"))
-                dest_filename = d.name.removesuffix('.d')
+                dest_filename = d.name.removesuffix(".d")
                 create_symlink(main_file, home_dir / dest_filename)
             except StopIteration:
                 # Do nothing if main.* file is not found
                 continue
 
     print("Dotfiles setup complete.")
+
 
 if __name__ == "__main__":
     main()
