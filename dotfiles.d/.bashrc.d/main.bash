@@ -118,9 +118,9 @@ fi
 
 . "$HOME/.atuin/bin/env"
 
-for f in $(ls ${SCRIPT_DIR}/*.*sh | grep -v ${SCRIPT_FILE}); do
-  source $f
-done
+if [ -f $SCRIPT_DIR/main.local.bash ]; then
+  source $SCRIPT_DIR/main.local.bash
+fi
 
 [[ -f ~/.bash-preexec.sh ]] && source ~/.bash-preexec.sh
 eval "$(atuin init bash --disable-up-arrow)"
