@@ -9,13 +9,22 @@ bind main B      ?git checkout -b "%(prompt Enter branch name: )" %(branch)
 bind refs B      ?git checkout -b "%(prompt Enter branch name: )" %(branch)
 bind main <Esc>b ?git checkout -b "%(prompt Enter branch name: )" %(commit)
 
-# Ctrl-A で commit amend
-bind generic <Ctrl-A> !git commit --amend
+# + で commit amend
+bind generic + !git commit --amend --allow-empty
+
+# ファイル削除
+bind refs   D ?git branch -d %(branch)
+bind status D ?git clean -d -f -- %(file)
+bind tree   D ?git rm %(file)
 
 # グラフ表示の文字化け対応
 set line-graphics = ascii
 bind status D ?rm %(file)
 bind refs M ?git merge %(branch)
+
+set diff-highlight = true
+color diff-header default magenta
+color diff-chunk  black   white
 
 # 行数表示
 set line-graphics = utf-8
