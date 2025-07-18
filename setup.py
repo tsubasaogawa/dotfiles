@@ -37,6 +37,8 @@ def main():
     dotfiles_dir = Path(__file__).parent.resolve() / "dotfiles.d"
     home_dir = Path.home()
 
+    create_symlink(dotfiles_dir, home_dir / ".dotfiles.d")
+
     # Process .dotfiles.d/.*rc
     for f in dotfiles_dir.glob(".*rc"):
         if f.is_file():
