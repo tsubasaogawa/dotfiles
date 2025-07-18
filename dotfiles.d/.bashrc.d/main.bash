@@ -95,30 +95,16 @@ source $SCRIPT_DIR/.git-prompt.sh
 
 complete -C '/usr/local/bin/aws_completer' aws
 
+# diff-highlight
+if ! which diff-highlight >/dev/null; then
+  $SCRIPT_DIR/install-diff-highlight.bash || true
+fi
+
 # The next line updates PATH for the Google Cloud SDK.
 if [ -f "$HOME/dev/yes/google-cloud-sdk/path.bash.inc" ]; then . "$HOME/dev/yes/google-cloud-sdk/path.bash.inc"; fi
 
 # The next line enables shell command completion for gcloud.
 if [ -f "$HOME/dev/yes/google-cloud-sdk/completion.bash.inc" ]; then . "$HOME/dev/yes/google-cloud-sdk/completion.bash.inc"; fi
-
-# Ignoring directories executing __git_ps1
-IGNORE_PS1_DIR=()
-function __git_ps1_modified() {
-  # No ignoring directory
-  if [[ -z $IGNORE_PS1_DIR ]]; then
-    __git_ps1
-    return 0
-  fi
-
-  # Some directories are
-  for ig_dir in ${IGNORE_PS1_DIR[@]}; do
-    [[ ${PWD} =~ ${ig_dir}.* ]] && return 1
-  done
-
-  # Current directory does not match ignore directories
-  __git_ps1
-  return 0
-}
 
 # dotenvx
 if command -v dotenvx >/dev/null; then
@@ -132,9 +118,9 @@ fi
 
 . "$HOME/.atuin/bin/env"
 
-for f in $(ls ${SCRIPT_DIR}/*.*sh | grep -v ${SCRIPT_FILE}); do
-  source $f
-done
+if [ -f $SCRIPT_DIR/main.local.bash ]; then
+  source $SCRIPT_DIR/main.local.bash
+fi
 
 [[ -f ~/.bash-preexec.sh ]] && source ~/.bash-preexec.sh
 eval "$(atuin init bash --disable-up-arrow)"
