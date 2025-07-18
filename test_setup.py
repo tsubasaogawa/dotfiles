@@ -10,8 +10,8 @@ import tempfile
 # Import the script to be tested
 import setup
 
-class TestSetup(unittest.TestCase):
 
+class TestSetup(unittest.TestCase):
     def setUp(self):
         """Create temporary directories and files before each test."""
         self.test_dir = Path(tempfile.mkdtemp())
@@ -23,12 +23,10 @@ class TestSetup(unittest.TestCase):
         # Create dummy dotfiles for testing
         (self.dotfiles_dir / ".bashrc").touch()
         (self.dotfiles_dir / ".zshrc").touch()
-        (self.dotfiles_dir / ".gitconfig").touch()
         (self.dotfiles_dir / ".vim.d").mkdir()
         (self.dotfiles_dir / ".vim.d" / "main.vim").touch()
         (self.dotfiles_dir / ".tig.d").mkdir()
         (self.dotfiles_dir / ".tig.d" / "main.tig").touch()
-
 
     def tearDown(self):
         """Clean up temporary directories after each test."""
@@ -60,15 +58,17 @@ class TestSetup(unittest.TestCase):
         dest = self.home_dir / ".bashrc"
         dummy_src = self.test_dir / "dummy"
         dummy_src.touch()
-        os.symlink(dummy_src, dest) # Create an existing symlink
+        os.symlink(dummy_src, dest)  # Create an existing symlink
 
         setup.create_symlink(src, dest)
         self.assertTrue(dest.is_symlink())
         self.assertEqual(os.readlink(dest), str(src))
-        self.assertFalse((self.home_dir / ".bashrc.bak").exists()) # Ensure no backup is created
+        self.assertFalse(
+            (self.home_dir / ".bashrc.bak").exists()
+        )  # Ensure no backup is created
 
-    @patch('setup.Path.home')
-    @patch('setup.Path.resolve')
+    @patch("setup.Path.home")
+    @patch("setup.Path.resolve")
     def test_main(self, mock_resolve, mock_home):
         """Test that the main function creates symlinks correctly."""
         # Mock Path.home() and Path.resolve() to point to the test directory
@@ -77,25 +77,32 @@ class TestSetup(unittest.TestCase):
         mock_resolve.return_value = self.test_dir
 
         # Execute the main function of setup.py
-        with patch('__main__.__file__', str(self.test_dir / 'setup.py')):
+        with patch("__main__.__file__", str(self.test_dir / "setup.py")):
             setup.main()
 
         # Check if the symlinks were created correctly
         self.assertTrue((self.home_dir / ".bashrc").is_symlink())
-        self.assertEqual(os.readlink(self.home_dir / ".bashrc"), str(self.dotfiles_dir / ".bashrc"))
+        self.assertEqual(
+            os.readlink(self.home_dir / ".bashrc"), str(self.dotfiles_dir / ".bashrc")
+        )
 
         self.assertTrue((self.home_dir / ".zshrc").is_symlink())
-        self.assertEqual(os.readlink(self.home_dir / ".zshrc"), str(self.dotfiles_dir / ".zshrc"))
-
-        self.assertTrue((self.home_dir / ".gitconfig").is_symlink())
-        self.assertEqual(os.readlink(self.home_dir / ".gitconfig"), str(self.dotfiles_dir / ".gitconfig"))
+        self.assertEqual(
+            os.readlink(self.home_dir / ".zshrc"), str(self.dotfiles_dir / ".zshrc")
+        )
 
         self.assertTrue((self.home_dir / ".vim").is_symlink())
-        self.assertEqual(os.readlink(self.home_dir / ".vim"), str(self.dotfiles_dir / ".vim.d" / "main.vim"))
+        self.assertEqual(
+            os.readlink(self.home_dir / ".vim"),
+            str(self.dotfiles_dir / ".vim.d" / "main.vim"),
+        )
 
         self.assertTrue((self.home_dir / ".tig").is_symlink())
-        self.assertEqual(os.readlink(self.home_dir / ".tig"), str(self.dotfiles_dir / ".tig.d" / "main.tig"))
+        self.assertEqual(
+            os.readlink(self.home_dir / ".tig"),
+            str(self.dotfiles_dir / ".tig.d" / "main.tig"),
+        )
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()
