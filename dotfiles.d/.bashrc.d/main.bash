@@ -106,25 +106,6 @@ if [ -f "$HOME/dev/yes/google-cloud-sdk/path.bash.inc" ]; then . "$HOME/dev/yes/
 # The next line enables shell command completion for gcloud.
 if [ -f "$HOME/dev/yes/google-cloud-sdk/completion.bash.inc" ]; then . "$HOME/dev/yes/google-cloud-sdk/completion.bash.inc"; fi
 
-# Ignoring directories executing __git_ps1
-IGNORE_PS1_DIR=()
-function __git_ps1_modified() {
-  # No ignoring directory
-  if [[ -z $IGNORE_PS1_DIR ]]; then
-    __git_ps1
-    return 0
-  fi
-
-  # Some directories are
-  for ig_dir in ${IGNORE_PS1_DIR[@]}; do
-    [[ ${PWD} =~ ${ig_dir}.* ]] && return 1
-  done
-
-  # Current directory does not match ignore directories
-  __git_ps1
-  return 0
-}
-
 # dotenvx
 if command -v dotenvx >/dev/null; then
   dotfiles_dir="${SCRIPT_DIR}/.."
