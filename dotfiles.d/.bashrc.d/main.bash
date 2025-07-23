@@ -40,13 +40,13 @@ eval "$(direnv hook bash)"
 . "$HOME/.asdf/completions/asdf.bash"
 
 # User specific aliases and functions
-# alias less='/usr/share/vim/vim74/macros/less.sh'
+alias ls='ls --color=auto'
 alias gre@='grep'
 alias switch_gcc5='scl enable devtoolset-4 bash'
 alias pd='pushd >/dev/null'
 alias ds='dirs -v'
-
 alias rsyncp='rsync -C --filter=":- .gitignore" -acv'
+
 source ~/.local/share/bash-abbrev-alias/abbrev-alias.plugin.bash
 abbrev-alias -c asu='aws-sso-util login --force-refresh'
 abbrev-alias -c gps='git push origin @'
@@ -118,8 +118,8 @@ fi
 
 . "$HOME/.atuin/bin/env"
 
-if [ -f $SCRIPT_DIR/main.local.bash ]; then
-  source $SCRIPT_DIR/main.local.bash
+if [ -f $SCRIPT_DIR/main_local.bash ]; then
+  source $SCRIPT_DIR/main_local.bash
 fi
 
 [[ -f ~/.bash-preexec.sh ]] && source ~/.bash-preexec.sh
