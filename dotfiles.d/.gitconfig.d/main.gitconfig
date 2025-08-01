@@ -13,5 +13,8 @@
   changed = green
   untracked = cyan
 
+[advice]
+  forceDeleteBranch = true
+
 [include]
   path = ~/.dotfiles.d/.gitconfig.d/.gitconfig.local

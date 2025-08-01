@@ -13,7 +13,7 @@ bind main <Esc>b ?git checkout -b "%(prompt Enter branch name: )" %(commit)
 bind generic + !git commit --amend --allow-empty
 
 # ファイル削除
-bind refs   D ?git branch -d %(branch)
+bind refs   D ?git branch -D %(branch)
 bind status D ?git clean -d -f -- %(file)
 bind tree   D ?git rm %(file)
 
