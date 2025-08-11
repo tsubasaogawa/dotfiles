@@ -106,6 +106,11 @@ if [ -f "$HOME/dev/yes/google-cloud-sdk/path.bash.inc" ]; then . "$HOME/dev/yes/
 # The next line enables shell command completion for gcloud.
 if [ -f "$HOME/dev/yes/google-cloud-sdk/completion.bash.inc" ]; then . "$HOME/dev/yes/google-cloud-sdk/completion.bash.inc"; fi
 
+# neobundle
+if [ ! -d ~/.vim/bundle/neobundle.vim ]; then
+  git clone https://github.com/Shougo/neobundle.vim ~/.vim/bundle/neobundle.vim
+fi
+
 # dotenvx
 if command -v dotenvx >/dev/null; then
   dotfiles_dir="${SCRIPT_DIR}/.."
