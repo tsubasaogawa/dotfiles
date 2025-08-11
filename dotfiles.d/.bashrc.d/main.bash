@@ -61,11 +61,11 @@ stty start undef
 shopt -s histappend
 
 function make() {
-  PLAN_FILE="/tmp/tfplan_$(date +%Y%m%d).log"
+  PLAN_FILE="/var/tmp/tfplan_$(date +%Y%m%d).log"
 
   if [ "$1" = 'plan' ] || [ "$1" = 'apply' ]; then
     date --iso-8601=seconds >> $PLAN_FILE
-    command make "$@" | tee -a $PLAN_FILE
+    command make "$@" | rrtee $PLAN_FILE
     echo -e "\n\n" >> $PLAN_FILE
     # sed -ire 's/ESC\[[0-9]+m//g' $PLAN_FILE
   else
