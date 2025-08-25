@@ -21,3 +21,5 @@
 
 [include]
   path = ~/.dotfiles.d/.gitconfig.d/.gitconfig.local
+[pull]
+	rebase = false
