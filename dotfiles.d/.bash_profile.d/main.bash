@@ -12,7 +12,7 @@ GIT_PS1_SHOWSTASHSTATE=true
 GIT_PS1_SHOWUPSTREAM=auto
 
 __git_ps1_mod() {
-  [[ ${PWD} =~ 'Obsidian' ]] && return 0
+  pwd | grep -q -e 'Obsidian' -e 'documents' && return 0 || true
   __git_ps1
 }
 
