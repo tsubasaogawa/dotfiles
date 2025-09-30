@@ -53,6 +53,7 @@ abbrev-alias -c gps='git push origin @'
 abbrev-alias -c gpl='git pull'
 abbrev-alias -ge B='$(git symbolic-ref --short HEAD 2>/dev/null)'
 abbrev-alias -c ti='terraform init'
+abbrev-alias -c awscopilot='/usr/local/bin/copilot'
 
 # stop screen lock & enable i-search
 stty stop undef
