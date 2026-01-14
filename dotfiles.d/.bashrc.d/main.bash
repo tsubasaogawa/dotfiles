@@ -36,8 +36,8 @@ eval "$(anyenv init -)"
 eval "$(pyenv virtualenv-init -)"
 eval "$(direnv hook bash)"
 
-. "$HOME/.asdf/asdf.sh"
-. "$HOME/.asdf/completions/asdf.bash"
+export ASDF_DATA_DIR="$HOME/.asdf"
+export PATH="$ASDF_DATA_DIR/shims:$PATH"
 
 # User specific aliases and functions
 alias ls='ls --color=auto'
