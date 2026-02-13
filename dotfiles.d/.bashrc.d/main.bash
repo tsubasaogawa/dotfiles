@@ -34,9 +34,7 @@ export LIBGL_ALWAYS_INDIRECT=true
 eval "$(anyenv init -)"
 eval "$(pyenv virtualenv-init -)"
 eval "$(direnv hook bash)"
-
-export ASDF_DATA_DIR="$HOME/.asdf"
-export PATH="$ASDF_DATA_DIR/shims:$PATH"
+eval "$(mise activate bash)"
 
 # User specific aliases and functions
 alias ls='ls --color=auto'
