@@ -10,7 +10,6 @@ SCRIPT_DIR=$(dirname $SCRIPT_FILE)
 
 # User specific environment and startup programs
 PATH=$PATH:$HOME/bin
-PATH="/usr/local/heroku/bin:$PATH"
 PATH="$HOME/.anyenv/bin:$PATH"
 PATH="$HOME/.cargo/bin:$PATH"
 PATH=$PATH:$HOME/.pulumi/bin
@@ -82,6 +81,10 @@ function pds() {
   [[ -z $pushd_number ]] && return 1
   pushd +$pushd_number
   return $?
+}
+
+function clean_git_branch() {
+  git fetch --prune && git branch -vv | grep ': gone]' | awk '{print $1}' | xargs git branch -D
 }
 
 # git-completion
