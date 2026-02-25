@@ -133,6 +133,8 @@ if [[ -f /etc/modules-load.d/cups-filters.conf ]]; then
   sudo mv /etc/modules-load.d/cups-filters.conf{,.bak}
 fi
 
+$SCRIPT_DIR/config-journald.bash || true
+
 # Atuin
 . "$HOME/.atuin/bin/env"
 
