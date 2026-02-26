@@ -124,7 +124,21 @@ if command -v dotenvx >/dev/null; then
   fi
 fi
 
+# for WSL2 + Ubuntu 24.04, startup issues
+cat /etc/fstab | grep -q '# LABEL=cloudimg-rootfs' && sudo sed -i.bak 's|^LABEL=cloudimg-rootfs.*|# &|' /etc/fstab || true
+sudo systemctl disable systemd-networkd
+
+## Disable printer modules
+if [[ -f /etc/modules-load.d/cups-filters.conf ]]; then
+  sudo mv /etc/modules-load.d/cups-filters.conf{,.bak}
+fi
+
+$SCRIPT_DIR/config-journald.bash || true
+
+# Atuin
 . "$HOME/.atuin/bin/env"
+
+# --- #
 
 if [ -f $SCRIPT_DIR/main_local.bash ]; then
   source $SCRIPT_DIR/main_local.bash
