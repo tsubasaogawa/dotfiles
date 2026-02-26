@@ -133,6 +133,13 @@ if [[ -f /etc/modules-load.d/cups-filters.conf ]]; then
   sudo mv /etc/modules-load.d/cups-filters.conf{,.bak}
 fi
 
+# Fix WSL2 GUI application issue
+## Source - https://stackoverflow.com/a/61110604
+## Posted by whme, modified by community. See post 'Timeline' for change history
+## Retrieved 2026-02-26, License - CC BY-SA 4.0
+export DISPLAY=$(ip route list default | awk '{print $3}'):0
+export LIBGL_ALWAYS_INDIRECT=1
+
 $SCRIPT_DIR/config-journald.bash || true
 
 # Atuin
