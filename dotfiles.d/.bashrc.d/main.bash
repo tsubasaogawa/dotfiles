@@ -96,6 +96,9 @@ fi
 source $SCRIPT_DIR/.git-completion.bash
 source $SCRIPT_DIR/.git-prompt.sh
 
+# sync gh command
+$SCRIPT_DIR/gh/main.bash || true
+
 complete -C '/usr/local/bin/aws_completer' aws
 
 # diff-highlight
