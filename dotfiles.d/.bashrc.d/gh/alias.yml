@@ -1,4 +1,4 @@
 co: pr checkout
 ls-latest: pr list --limit 1 --state all --author @me --json number,title,author,createdAt
-pr-create-personal: pr create --assignee @me
+pr-create: pr create --assignee @me
 pr-merge-personal: pr merge --squash
