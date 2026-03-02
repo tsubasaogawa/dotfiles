@@ -7,7 +7,7 @@
   ci = commit -m
   br = branch
   sw = switch
-  ps = push
+  ps = push origin HEAD
 
 [color]
   ui = auto
