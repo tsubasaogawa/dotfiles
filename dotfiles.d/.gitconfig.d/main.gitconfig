@@ -6,9 +6,9 @@
   st = status
   ci = commit -m
   br = branch
-  co = checkout
+  sw = switch
   ps = push
-  
+
 [color]
   ui = auto
 
@@ -22,5 +22,6 @@
 
 [include]
   path = ~/.dotfiles.d/.gitconfig.d/.gitconfig.local
+
 [pull]
-	rebase = false
+  rebase = false
