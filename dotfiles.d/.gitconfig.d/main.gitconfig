@@ -9,6 +9,7 @@
   sw = switch
   ps = push origin HEAD
   pl = pull
+  cwb = rev-parse --abbrev-ref HEAD
   add-x = update-index --add --chmod=+x
 
 [color]
