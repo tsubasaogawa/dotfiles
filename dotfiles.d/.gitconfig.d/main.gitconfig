@@ -11,7 +11,9 @@
   pl = pull
   cwb = rev-parse --abbrev-ref HEAD
   add-x = update-index --add --chmod=+x
-  cleanup = "!git remote prune origin && git branch --merged | grep -v '\\*\\|main\\|master' | xargs -n 1 git branch -d"
+  cleanup = "!git cleanup-merged; git cleanup-squash-merged"
+  cleanup-merged = "!git remote prune origin && git branch --merged | grep -v '\\*\\|main\\|master' | xargs -n 1 git branch -d"
+  cleanup-squash-merged = "!{ git branch --merged | grep -vE '^\\*|^  (main|master)$'; git branch --no-merged | while read b; do git diff $(git merge-base master $b 2>/dev/null || git merge-base main $b) $b | git apply --reverse --check 2>/dev/null && echo $b; done; } | xargs git branch -D"
 
 [color]
   ui = auto
