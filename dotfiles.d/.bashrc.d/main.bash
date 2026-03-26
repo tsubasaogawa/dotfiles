@@ -47,7 +47,7 @@ alias rsyncp='rsync -C --filter=":- .gitignore" -acv'
 source ~/.local/share/bash-abbrev-alias/abbrev-alias.plugin.bash
 abbrev-alias -c asu='aws-sso-util login --force-refresh'
 abbrev-alias -ge B='$(git symbolic-ref --short HEAD 2>/dev/null)'
-abbrev-alias -c automerge='git push origin HEAD && gh pr-create --fill --submit && gh pr-merge-personal && { git switch main || git switch master; } && git pull'
+abbrev-alias -c automerge='git push origin HEAD && gh pr-create --fill --draft && gh pr ready && gh pr-merge-personal && { git switch main || git switch master; } && git pull'
 abbrev-alias -c awscopilot='/usr/local/bin/copilot'
 abbrev-alias -c copilot='copilot --banner'
 abbrev-alias -c cdp='cd $(ls | peco)'
