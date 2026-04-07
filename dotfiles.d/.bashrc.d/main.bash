@@ -51,6 +51,7 @@ abbrev-alias -c automerge='gh pr-create && gh pr-merge-personal && { git switch 
 abbrev-alias -c awscopilot='/usr/local/bin/copilot'
 abbrev-alias -c copilot='copilot --banner'
 abbrev-alias -c cdp='cd $(ls | peco)'
+abbrev-alias -c histp='$($(history | peco || echo ''))'
 
 # stop screen lock & enable i-search
 stty stop undef
