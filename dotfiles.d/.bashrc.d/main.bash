@@ -22,6 +22,9 @@ PATH="$HOME/.local/lib/shellspec/bin:$PATH"
 
 export PATH
 
+export LC_ALL=ja_JP.UTF-8
+export LANG=ja_JP.UTF-8
+
 export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
 [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
@@ -50,6 +53,7 @@ abbrev-alias -ge B='$(git symbolic-ref --short HEAD 2>/dev/null)'
 abbrev-alias -c automerge='git push origin HEAD && gh pr-create --fill --draft && gh pr ready && gh pr-merge-personal && { git switch main || git switch master; } && git pull'
 abbrev-alias -c awscopilot='/usr/local/bin/copilot'
 abbrev-alias -c copilot='copilot --banner'
+abbrev-alias -c ask='copilot --model gpt-5-mini --prompt'
 abbrev-alias -c cdp='cd $(ls | peco)'
 abbrev-alias -c histp='$($(history | peco || echo ''))'
 
