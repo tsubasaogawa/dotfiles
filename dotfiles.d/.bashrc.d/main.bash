@@ -22,9 +22,6 @@ PATH="$HOME/.local/lib/shellspec/bin:$PATH"
 
 export PATH
 
-export LC_ALL=ja_JP.UTF-8
-export LANG=ja_JP.UTF-8
-
 export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
 [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
@@ -85,10 +82,16 @@ function pds() {
   return $?
 }
 
-function clean_git_branch() {
+function git_branch_cleanup() {
   git fetch --prune && git branch -vv | grep ': gone]' | awk '{print $1}' | xargs git branch -D
 }
 
+function wsl_interop_error_fix() {
+  echo ":WSLInterop:M::MZ::/init:PF" | sudo tee /usr/lib/binfmt.d/WSLInterop.conf \
+    && sudo systemctl unmask systemd-binfmt \
+    && sudo systemctl restart systemd-binfmt \
+    && sudo systemctl mask systemd-binfmt
+}
 # git-completion
 if [ ! -f $SCRIPT_DIR/.git-completion.bash ]; then
   curl -sS -o $SCRIPT_DIR/.git-completion.bash https://raw.githubusercontent.com/git/git/master/contrib/completion/git-completion.bash
