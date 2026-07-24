@@ -92,6 +92,11 @@ function wsl_interop_error_fix() {
     && sudo systemctl restart systemd-binfmt \
     && sudo systemctl mask systemd-binfmt
 }
+
+function obsidian() {
+  Obsidian.exe "$@" 2>&1 | tr -d '\r'
+}
+
 # git-completion
 if [ ! -f $SCRIPT_DIR/.git-completion.bash ]; then
   curl -sS -o $SCRIPT_DIR/.git-completion.bash https://raw.githubusercontent.com/git/git/master/contrib/completion/git-completion.bash
@@ -164,3 +169,11 @@ fi
 
 [[ -f ~/.bash-preexec.sh ]] && source ~/.bash-preexec.sh
 eval "$(atuin init bash --disable-up-arrow)"
+
+# pnpm
+export PNPM_HOME="/home/t_ogawa/.local/share/pnpm"
+case ":$PATH:" in
+  *":$PNPM_HOME/bin:"*) ;;
+  *) export PATH="$PNPM_HOME/bin:$PATH" ;;
+esac
+# pnpm end
