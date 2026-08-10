@@ -157,6 +157,7 @@ export LIBGL_ALWAYS_INDIRECT=1
 
 $SCRIPT_DIR/config-journald.bash || true
 $SCRIPT_DIR/create-asoundrc.bash || true
+source $SCRIPT_DIR/agents.bash || true
 
 # Atuin
 . "$HOME/.atuin/bin/env"
@@ -166,6 +167,7 @@ $SCRIPT_DIR/create-asoundrc.bash || true
 if [ -f $SCRIPT_DIR/main_local.bash ]; then
   source $SCRIPT_DIR/main_local.bash
 fi
+
 
 [[ -f ~/.bash-preexec.sh ]] && source ~/.bash-preexec.sh
 eval "$(atuin init bash --disable-up-arrow)"
