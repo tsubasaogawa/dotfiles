@@ -1,11 +1,11 @@
 # --- AWS SSO session expiry check ---
 
 [[ $- == *i* ]] || return 0
-aws-sso-util || return 0
+aws-sso-util >/dev/null 2>&1 || return 0
 
 _AWS_SSO_CACHE_DIR="${HOME}/.aws/sso/cache"
-_AWS_SSO_CHECK_INTERVAL=60 # seconds between checks
-_AWS_SSO_WARN_MINUTES=60   # warn when remaining minutes fall below this
+_AWS_SSO_CHECK_INTERVAL=300 # seconds between checks
+_AWS_SSO_WARN_MINUTES=60    # warn when remaining minutes fall below this
 _aws_sso_last_check=0
 
 _aws_sso_notify() {
