@@ -22,9 +22,6 @@ PATH="$HOME/.local/lib/shellspec/bin:$PATH"
 
 export PATH
 
-export LC_ALL=ja_JP.UTF-8
-export LANG=ja_JP.UTF-8
-
 export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
 [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
@@ -85,8 +82,19 @@ function pds() {
   return $?
 }
 
-function clean_git_branch() {
+function git_branch_cleanup() {
   git fetch --prune && git branch -vv | grep ': gone]' | awk '{print $1}' | xargs git branch -D
+}
+
+function wsl_interop_error_fix() {
+  echo ":WSLInterop:M::MZ::/init:PF" | sudo tee /usr/lib/binfmt.d/WSLInterop.conf \
+    && sudo systemctl unmask systemd-binfmt \
+    && sudo systemctl restart systemd-binfmt \
+    && sudo systemctl mask systemd-binfmt
+}
+
+function obsidian() {
+  Obsidian.exe "$@" 2>&1 | tr -d '\r'
 }
 
 # git-completion
@@ -133,7 +141,7 @@ fi
 
 # for WSL2 + Ubuntu 24.04, startup issues
 cat /etc/fstab | grep -q '# LABEL=cloudimg-rootfs' && sudo sed -i.bak 's|^LABEL=cloudimg-rootfs.*|# &|' /etc/fstab || true
-sudo systemctl disable systemd-networkd
+# sudo systemctl disable systemd-networkd
 
 ## Disable printer modules
 if [[ -f /etc/modules-load.d/cups-filters.conf ]]; then
@@ -149,6 +157,7 @@ export LIBGL_ALWAYS_INDIRECT=1
 
 $SCRIPT_DIR/config-journald.bash || true
 $SCRIPT_DIR/create-asoundrc.bash || true
+source $SCRIPT_DIR/agents.bash || true
 
 # Atuin
 . "$HOME/.atuin/bin/env"
@@ -159,5 +168,14 @@ if [ -f $SCRIPT_DIR/main_local.bash ]; then
   source $SCRIPT_DIR/main_local.bash
 fi
 
+
 [[ -f ~/.bash-preexec.sh ]] && source ~/.bash-preexec.sh
 eval "$(atuin init bash --disable-up-arrow)"
+
+# pnpm
+export PNPM_HOME="/home/t_ogawa/.local/share/pnpm"
+case ":$PATH:" in
+  *":$PNPM_HOME/bin:"*) ;;
+  *) export PATH="$PNPM_HOME/bin:$PATH" ;;
+esac
+# pnpm end

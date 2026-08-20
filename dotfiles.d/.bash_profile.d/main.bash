@@ -5,6 +5,11 @@ if [ -f ~/.bashrc ]; then
 	. ~/.bashrc
 fi
 
+SCRIPT_FILE=$(readlink -f ${BASH_SOURCE[0]})
+SCRIPT_DIR=$(dirname $SCRIPT_FILE)
+
+source $SCRIPT_DIR/aws_sso_session_expiry.bash
+
 # Prompt customization
 GIT_PS1_SHOWDIRTYSTATE=true
 GIT_PS1_SHOWUNTRACKEDFILES=true
@@ -12,7 +17,7 @@ GIT_PS1_SHOWSTASHSTATE=true
 GIT_PS1_SHOWUPSTREAM=auto
 
 __git_ps1_mod() {
-  pwd | grep -q -e 'Obsidian' -e 'documents' && return 0 || true
+  pwd | grep -q -e 'Obsidian' -e 'obsidian' -e 'Documents' -e 'documents' && return 0 || true
   __git_ps1
 }
 
