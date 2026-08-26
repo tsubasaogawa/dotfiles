@@ -25,11 +25,14 @@ Here's how it works:
 
 The script processes files based on the following rules:
 
-1.  Files ending in `.rc` directly under `dotfiles.d/` (e.g., `.vimrc`, `.zshrc`).
-2.  The `dotfiles.d/.gitconfig` file.
-3.  Any file named `main.*` inside a directory ending with `.d` within `dotfiles.d/` (e.g., `.config.d`).
+1.  Files ending in `rc` directly under `dotfiles.d/` (e.g., `.vimrc`, `.tigrc`).
+2.  Any file named `main.*` inside a directory ending with `.d` within `dotfiles.d/` (e.g., `.gitconfig.d`).
     - In this case, the symbolic link is created with the `.d` suffix removed from the directory name.
-    - For example, `dotfiles.d/.config.d/main.vim` will be linked as `~/.config`.
+    - For example, `dotfiles.d/.gitconfig.d/main.gitconfig` will be linked as `~/.gitconfig`.
+3.  Directories directly under `dotfiles.d/.config/`.
+    - Only the directories themselves are linked, so your existing `~/.config` is never replaced.
+    - For example, `dotfiles.d/.config/mise` will be linked as `~/.config/mise`.
+    - `~/.config` is created if it does not exist. Files placed directly under `dotfiles.d/.config/` are ignored.
 
 ## Usage
 
@@ -57,20 +60,40 @@ You can add your own configuration files to the `dotfiles.d/` directory and run 
     ```
 3.  A symbolic link will be created at `~/.my_custom_rc`.
 
-### Case 2: Configuration Requiring a Directory (e.g., `~/.config/foo/settings.conf`)
+### Case 2: A File Split Into Multiple Sources (e.g., `~/.gitconfig`)
 
 The `setup.py` script gives special treatment to directories ending in `.d` within `dotfiles.d/`.
 
-1.  Create a directory like `.config.d` inside `dotfiles.d/`.
-2.  Place your main configuration file, named starting with `main` (e.g., `main.conf`), inside it.
+1.  Create a directory like `.gitconfig.d` inside `dotfiles.d/`.
+2.  Place your main configuration file, named starting with `main` (e.g., `main.gitconfig`), inside it.
     ```
     dotfiles
     └── dotfiles.d
-        └── .config.d      <-- Create this directory
-            └── main.conf  <-- This is the main config file
+        └── .gitconfig.d         <-- Create this directory
+            └── main.gitconfig   <-- This is the main config file
     ```
 3.  Run the script.
     ```bash
     $ ./setup.py
     ```
-4.  A symbolic link to `dotfiles.d/.config.d/main.conf` will be created as `~/.config`.
+4.  A symbolic link to `dotfiles.d/.gitconfig.d/main.gitconfig` will be created as `~/.gitconfig`.
+    - Other files in the directory are not linked, so use them for sources that the main file includes.
+
+### Case 3: Configuration Under `~/.config` (e.g., `~/.config/mise/config.toml`)
+
+`~/.config` is shared with tools that are not managed here, so the script never replaces it. Instead, it links each directory under `dotfiles.d/.config/` individually.
+
+1.  Create a directory named after the tool inside `dotfiles.d/.config/`.
+2.  Place the configuration files inside it.
+    ```
+    dotfiles
+    └── dotfiles.d
+        └── .config
+            └── mise            <-- Create this directory
+                └── config.toml
+    ```
+3.  Run the script.
+    ```bash
+    $ ./setup.py
+    ```
+4.  A symbolic link to `dotfiles.d/.config/mise` will be created as `~/.config/mise`.

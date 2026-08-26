@@ -27,6 +27,10 @@ class TestSetup(unittest.TestCase):
         (self.dotfiles_dir / ".vim.d" / "main.vim").touch()
         (self.dotfiles_dir / ".tig.d").mkdir()
         (self.dotfiles_dir / ".tig.d" / "main.tig").touch()
+        (self.dotfiles_dir / ".config").mkdir()
+        (self.dotfiles_dir / ".config" / "mise").mkdir()
+        (self.dotfiles_dir / ".config" / "mise" / "config.toml").touch()
+        (self.dotfiles_dir / ".config" / "starship.toml").touch()
 
     def tearDown(self):
         """Clean up temporary directories after each test."""
@@ -118,6 +122,39 @@ class TestSetup(unittest.TestCase):
             os.readlink(self.home_dir / ".tig"),
             str(self.dotfiles_dir / ".tig.d" / "main.tig"),
         )
+
+        # ~/.config itself must stay a real directory
+        home_config = self.home_dir / ".config"
+        self.assertTrue(home_config.is_dir())
+        self.assertFalse(home_config.is_symlink())
+
+        self.assertTrue((home_config / "mise").is_symlink())
+        self.assertEqual(
+            os.readlink(home_config / "mise"),
+            str(self.dotfiles_dir / ".config" / "mise"),
+        )
+
+        # Files directly under .config are not linked
+        self.assertFalse((home_config / "starship.toml").exists())
+
+    @patch("setup.Path.home")
+    @patch("setup.Path.resolve")
+    def test_main_preserves_existing_config_dir(self, mock_resolve, mock_home):
+        """Test that an existing ~/.config and its unmanaged contents are kept."""
+        mock_home.return_value = self.home_dir
+        mock_resolve.return_value = self.test_dir
+
+        home_config = self.home_dir / ".config"
+        unmanaged_file = home_config / "other_tool" / "settings.json"
+        unmanaged_file.parent.mkdir(parents=True)
+        unmanaged_file.write_text("keep me")
+
+        setup.main()
+
+        self.assertFalse(home_config.is_symlink())
+        self.assertEqual(unmanaged_file.read_text(), "keep me")
+        self.assertTrue((home_config / "mise").is_symlink())
+        self.assertFalse((self.home_dir / ".config.bak").exists())
 
 
 if __name__ == "__main__":

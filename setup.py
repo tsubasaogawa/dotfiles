@@ -54,6 +54,17 @@ def main() -> None:
             continue
         create_symlink(main_file, home_dir / d.name.removesuffix(".d"))
 
+    # Process .dotfiles.d/.config/*/
+    # Only the directories under it are linked, so ~/.config itself is left intact
+    config_dir = dotfiles_dir / ".config"
+    if config_dir.is_dir():
+        home_config_dir = home_dir / ".config"
+        home_config_dir.mkdir(parents=True, exist_ok=True)
+        for d in sorted(config_dir.iterdir()):
+            if not d.is_dir():
+                continue
+            create_symlink(d, home_config_dir / d.name)
+
     print("Dotfiles setup complete.")
 
 
