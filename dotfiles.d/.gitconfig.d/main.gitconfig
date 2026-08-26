@@ -32,8 +32,12 @@
 [pull]
   rebase = false
 
+# An empty `helper` discards helpers defined earlier, such as the
+# version-pinned absolute paths `gh auth setup-git` writes into .gitconfig.local
 [credential "https://github.com"]
-	helper = !gh auth git-credential
+  helper =
+  helper = !gh auth git-credential
 [credential "https://gist.github.com"]
-	helper = !gh auth git-credential
+  helper =
+  helper = !gh auth git-credential
 
