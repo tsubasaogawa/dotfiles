@@ -79,6 +79,19 @@ The `setup.py` script gives special treatment to directories ending in `.d` with
 4.  A symbolic link to `dotfiles.d/.gitconfig.d/main.gitconfig` will be created as `~/.gitconfig`.
     - Other files in the directory are not linked, so use them for sources that the main file includes.
 
+#### Machine-Local Settings
+
+Settings that should not be committed (credentials, machine-specific paths) go in a file named `main_local.<ext>` in the same `.d` directory, and the main file includes or sources it.
+Everything matching `*_local.*` under `dotfiles.d/` is ignored by Git, so each machine keeps its own copy.
+
+```
+dotfiles
+└── dotfiles.d
+    └── .gitconfig.d
+        ├── main.gitconfig         <-- Committed. Includes the file below
+        └── main_local.gitconfig   <-- Not committed. Machine-local settings
+```
+
 ### Case 3: Configuration Under `~/.config` (e.g., `~/.config/mise/config.toml`)
 
 `~/.config` is shared with tools that are not managed here, so the script never replaces it. Instead, it links each directory under `dotfiles.d/.config/` individually.

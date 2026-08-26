@@ -27,13 +27,13 @@
   forceDeleteBranch = true
 
 [include]
-  path = ~/.dotfiles.d/.gitconfig.d/.gitconfig.local
+  path = ~/.dotfiles.d/.gitconfig.d/main_local.gitconfig
 
 [pull]
   rebase = false
 
 # An empty `helper` discards helpers defined earlier, such as the
-# version-pinned absolute paths `gh auth setup-git` writes into .gitconfig.local
+# version-pinned absolute paths `gh auth setup-git` writes into main_local.gitconfig
 [credential "https://github.com"]
   helper =
   helper = !gh auth git-credential
