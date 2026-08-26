@@ -67,6 +67,22 @@ class TestSetup(unittest.TestCase):
             (self.home_dir / ".bashrc.bak").exists()
         )  # Ensure no backup is created
 
+    def test_create_symlink_already_linked(self):
+        """Test that a symlink already pointing to src is left untouched."""
+        src = self.dotfiles_dir / ".bashrc"
+        dest = self.home_dir / ".bashrc"
+        setup.create_symlink(src, dest)
+        original_ino = dest.lstat().st_ino
+
+        with patch.object(setup.Path, "unlink") as mock_unlink:
+            setup.create_symlink(src, dest)
+            mock_unlink.assert_not_called()  # Ensure the symlink is not recreated
+
+        self.assertTrue(dest.is_symlink())
+        self.assertEqual(os.readlink(dest), str(src))
+        self.assertEqual(dest.lstat().st_ino, original_ino)
+        self.assertFalse((self.home_dir / ".bashrc.bak").exists())
+
     @patch("setup.Path.home")
     @patch("setup.Path.resolve")
     def test_main(self, mock_resolve, mock_home):

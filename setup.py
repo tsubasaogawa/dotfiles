@@ -1,36 +1,35 @@
 #!/usr/bin/env python3
 
-import os
 from pathlib import Path
 
 
-def create_symlink(src: Path, dest: Path):
+def create_symlink(src: Path, dest: Path) -> None:
     """
     Creates a symbolic link.
 
+    - If dest already points to src, nothing is done.
     - If dest is a symlink, it will be overwritten.
     - If dest is a file or directory, a backup will be created before creating the symlink.
     - If dest does not exist, a new symlink will be created.
     """
     if dest.is_symlink():
-        # Overwrite existing symlink
+        if dest.readlink() == src:
+            print(f"Already linked: {dest} -> {src}")
+            return
         dest.unlink()
-        os.symlink(src, dest)
-        print(f"Updated symlink: {dest} -> {src}")
-    elif dest.exists():
-        # Backup existing file
-        backup_path = Path(f"{dest}.bak")
-        dest.rename(backup_path)
-        print(f"Backed up existing file: {dest} -> {backup_path}")
-        os.symlink(src, dest)
-        print(f"Created symlink: {dest} -> {src}")
+        action = "Updated symlink"
     else:
-        # Create new symlink
-        os.symlink(src, dest)
-        print(f"Created symlink: {dest} -> {src}")
+        if dest.exists():
+            backup_path = dest.with_name(f"{dest.name}.bak")
+            dest.rename(backup_path)
+            print(f"Backed up existing file: {dest} -> {backup_path}")
+        action = "Created symlink"
+
+    dest.symlink_to(src)
+    print(f"{action}: {dest} -> {src}")
 
 
-def main():
+def main() -> None:
     """
     Executes the dotfiles setup.
     """
@@ -40,20 +39,20 @@ def main():
     create_symlink(dotfiles_dir, home_dir / ".dotfiles.d")
 
     # Process .dotfiles.d/.*rc
-    for f in dotfiles_dir.glob(".*rc"):
-        if f.is_file():
-            create_symlink(f, home_dir / f.name)
+    for f in sorted(dotfiles_dir.glob(".*rc")):
+        if not f.is_file():
+            continue
+        create_symlink(f, home_dir / f.name)
 
     # Process .dotfiles.d/.*.d/main.*
-    for d in dotfiles_dir.glob(".*.d"):
-        if d.is_dir():
-            try:
-                main_file = next(d.glob("main.*"))
-                dest_filename = d.name.removesuffix(".d")
-                create_symlink(main_file, home_dir / dest_filename)
-            except StopIteration:
-                # Do nothing if main.* file is not found
-                continue
+    for d in sorted(dotfiles_dir.glob(".*.d")):
+        if not d.is_dir():
+            continue
+        main_file = next(iter(sorted(d.glob("main.*"))), None)
+        if main_file is None:
+            # Do nothing if main.* file is not found
+            continue
+        create_symlink(main_file, home_dir / d.name.removesuffix(".d"))
 
     print("Dotfiles setup complete.")
 
