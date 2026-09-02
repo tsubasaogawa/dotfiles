@@ -2,6 +2,7 @@
 "aqua:github/copilot-cli" = "latest"
 "aqua:k1LoW/mo" = "latest"
 "aqua:ogham/exa" = "latest"
+aws-cli = { version = "latest", symlink_bins = "true" }
 bat = "latest"
 claude = "latest"
 codex = "latest"

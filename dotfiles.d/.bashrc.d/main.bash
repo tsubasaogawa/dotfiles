@@ -13,7 +13,7 @@ PATH=$PATH:$HOME/bin
 PATH="$HOME/.anyenv/bin:$PATH"
 PATH="$HOME/.cargo/bin:$PATH"
 PATH=$PATH:$HOME/.pulumi/bin
-PATH="/opt/go/bin:$GOPATH/bin:$PATH"
+PATH="/opt/go/bin:$PATH"
 PATH="$HOME/.slsenv/bin:$PATH"
 PATH="/mnt/c/Program\ Files/Docker/Docker/resources/bin:$PATH"
 PATH="/home/t_ogawa/.local/bin:$PATH"
@@ -22,19 +22,32 @@ PATH="$HOME/.local/lib/shellspec/bin:$PATH"
 
 export PATH
 
-export NVM_DIR="$HOME/.nvm"
+# 静的な環境変数は .env 系に集約する。dotenvx 自体が $HOME/.local/bin にあるため
+# PATH を通した直後に読み込み、$NVM_DIR や $PNPM_HOME を以降で参照できるようにする
+if command -v dotenvx >/dev/null; then
+  dotfiles_dir="${SCRIPT_DIR}/.."
+  if [[ -f "${dotfiles_dir}/.env" ]]; then
+    export $(dotenvx get --format shell -f "${dotfiles_dir}/.env")
+    export $(dotenvx get --format shell -f "${dotfiles_dir}/.env.secret.encrypted")
+    [[ -f "${dotfiles_dir}/.env.local" ]] && export $(dotenvx get --format shell -f "${dotfiles_dir}/.env.local")
+  fi
+fi
+
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
 [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
 
-# https://blog.odaryo.com/2020/01/wsl2-xserver-export-display/
-# https://www.beekeeperstudio.io/blog/building-electron-windows-ubuntu-wsl2
-export DISPLAY=$(cat /etc/resolv.conf | grep nameserver | awk '{print $2}'):0.0
-export LIBGL_ALWAYS_INDIRECT=true
-
 eval "$(anyenv init -)"
+
+# GOPATH は goenv が選択中バージョンに合わせて設定するため anyenv init の後で使う
+[[ -n "$GOPATH" ]] && export PATH="$GOPATH/bin:$PATH"
+
 eval "$(pyenv virtualenv-init -)"
 eval "$(direnv hook bash)"
 eval "$(mise activate bash)"
+command -v zoxide && eval "$(zoxide init bash)"
+
+# pyenv 解決後の python を指す必要があるため .env ではなくここで定義する
+export PIPX_DEFAULT_PYTHON="$(command -v python)"
 
 # User specific aliases and functions
 alias ls='ls --color=auto'
@@ -51,6 +64,7 @@ abbrev-alias -c automerge='git push origin HEAD && gh pr-create --fill --draft &
 abbrev-alias -c awscopilot='/usr/local/bin/copilot'
 abbrev-alias -c copilot='copilot --banner'
 abbrev-alias -c ask='copilot --model gpt-5-mini --prompt'
+abbrev-alias -c cd='z'
 abbrev-alias -c cdp='cd $(ls | peco)'
 abbrev-alias -c histp='$($(history | peco || echo ''))'
 
@@ -94,7 +108,11 @@ function wsl_interop_error_fix() {
 }
 
 function obsidian() {
-  Obsidian.exe "$@" 2>&1 | tr -d '\r'
+  # Obsidian.exe は GUI サブシステムのバイナリなので、WSL からパイプ経由で呼ぶと
+  # 標準出力が握り潰され終了コードも壊れる。コンソールサブシステムのスタブである
+  # Obsidian.com を使う。https://github.com/kepano/obsidian-skills/issues/93
+  Obsidian.com "$@" 2>&1 | tr -d '\r'
+  return "${PIPESTATUS[0]}"
 }
 
 # git-completion
@@ -129,16 +147,6 @@ if [ ! -d ~/.vim/bundle/neobundle.vim ]; then
   git clone https://github.com/Shougo/neobundle.vim ~/.vim/bundle/neobundle.vim
 fi
 
-# dotenvx
-if command -v dotenvx >/dev/null; then
-  dotfiles_dir="${SCRIPT_DIR}/.."
-  if [[ -n "$dotfiles_dir" ]] && [[ -f "${dotfiles_dir}/.env" ]]; then
-    export $(dotenvx get --format shell -f "${dotfiles_dir}/.env")
-    export $(dotenvx get --format shell -f "${dotfiles_dir}/.env.secret.encrypted")
-    [[ -f "${dotfiles_dir}/.env.local" ]] && export $(dotenvx get --format shell -f "${dotfiles_dir}/.env.local")
-  fi
-fi
-
 # for WSL2 + Ubuntu 24.04, startup issues
 cat /etc/fstab | grep -q '# LABEL=cloudimg-rootfs' && sudo sed -i.bak 's|^LABEL=cloudimg-rootfs.*|# &|' /etc/fstab || true
 # sudo systemctl disable systemd-networkd
@@ -153,7 +161,6 @@ fi
 ## Posted by whme, modified by community. See post 'Timeline' for change history
 ## Retrieved 2026-02-26, License - CC BY-SA 4.0
 export DISPLAY=$(ip route list default | awk '{print $3}'):0
-export LIBGL_ALWAYS_INDIRECT=1
 
 $SCRIPT_DIR/config-journald.bash || true
 $SCRIPT_DIR/create-asoundrc.bash || true
@@ -173,9 +180,10 @@ fi
 eval "$(atuin init bash --disable-up-arrow)"
 
 # pnpm
-export PNPM_HOME="/home/t_ogawa/.local/share/pnpm"
-case ":$PATH:" in
-  *":$PNPM_HOME/bin:"*) ;;
-  *) export PATH="$PNPM_HOME/bin:$PATH" ;;
-esac
+if [[ -n "$PNPM_HOME" ]]; then
+  case ":$PATH:" in
+    *":$PNPM_HOME/bin:"*) ;;
+    *) export PATH="$PNPM_HOME/bin:$PATH" ;;
+  esac
+fi
 # pnpm end
