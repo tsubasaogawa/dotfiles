@@ -57,6 +57,8 @@ alias pd='pushd >/dev/null'
 alias ds='dirs -v'
 alias rsyncp='rsync -C --filter=":- .gitignore" -acv'
 
+case $- in
+*i*)
 source ~/.local/share/bash-abbrev-alias/abbrev-alias.plugin.bash
 abbrev-alias -c asu='aws sso login'
 abbrev-alias -ge B='$(git symbolic-ref --short HEAD 2>/dev/null)'
@@ -66,10 +68,16 @@ abbrev-alias -c ask='claude --model haiku -p'
 abbrev-alias -c cd='z'
 command -v eza >/dev/null 2>&1 && abbrev-alias -c ls='eza'
 abbrev-alias -c histp='$($(history | peco || echo ''))'
+;;
+esac
 
 # stop screen lock & enable i-search
+case $- in
+*i*)
 stty stop undef
 stty start undef
+;;
+esac
 
 shopt -s histappend
 
