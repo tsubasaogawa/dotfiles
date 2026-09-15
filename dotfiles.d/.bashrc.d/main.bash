@@ -5,11 +5,11 @@ if [ -f /etc/bashrc ]; then
 	. /etc/bashrc
 fi
 
-SCRIPT_FILE=$(readlink -f ${BASH_SOURCE[0]})
-SCRIPT_DIR=$(dirname $SCRIPT_FILE)
+SCRIPT_FILE=$(readlink -f "${BASH_SOURCE[0]}")
+SCRIPT_DIR=$(dirname "$SCRIPT_FILE")
 
-# User specific environment and startup programs
-PATH=$PATH:$HOME/bin
+# PATH
+PATH="$PATH:$HOME/bin"
 PATH="$HOME/.anyenv/bin:$PATH"
 PATH="$HOME/.cargo/bin:$PATH"
 PATH=$PATH:$HOME/.pulumi/bin
@@ -22,8 +22,9 @@ PATH="$HOME/.local/lib/shellspec/bin:$PATH"
 
 export PATH
 
-# 静的な環境変数は .env 系に集約する。dotenvx 自体が $HOME/.local/bin にあるため
-# PATH を通した直後に読み込み、$NVM_DIR や $PNPM_HOME を以降で参照できるようにする
+# Environment variables
+# dotenvx 自体が $HOME/.local/bin にあるため、PATH を通した直後に読み込む。
+# $NVM_DIR や $PNPM_HOME は以降の初期化で参照する。
 if command -v dotenvx >/dev/null; then
   dotfiles_dir="${SCRIPT_DIR}/.."
   if [[ -f "${dotfiles_dir}/.env" ]]; then
@@ -36,20 +37,31 @@ fi
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
 [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
 
-eval "$(anyenv init -)"
+# Version managers and shell integrations
+if command -v anyenv >/dev/null 2>&1; then
+  eval "$(anyenv init -)"
+fi
 
 # GOPATH は goenv が選択中バージョンに合わせて設定するため anyenv init の後で使う
 [[ -n "$GOPATH" ]] && export PATH="$GOPATH/bin:$PATH"
 
-eval "$(pyenv virtualenv-init -)"
-eval "$(direnv hook bash)"
-eval "$(mise activate bash)"
+if command -v pyenv >/dev/null 2>&1; then
+  eval "$(pyenv virtualenv-init -)"
+fi
+if command -v direnv >/dev/null 2>&1; then
+  eval "$(direnv hook bash)"
+fi
+if command -v mise >/dev/null 2>&1; then
+  eval "$(mise activate bash)"
+fi
 command -v zoxide >/dev/null 2>&1 && eval "$(zoxide init bash)"
 
 # pyenv 解決後の python を指す必要があるため .env ではなくここで定義する
-export PIPX_DEFAULT_PYTHON="$(command -v python)"
+if command -v python >/dev/null 2>&1; then
+  export PIPX_DEFAULT_PYTHON="$(command -v python)"
+fi
 
-# User specific aliases and functions
+# Aliases and interactive integrations
 alias ls='ls --color=auto'
 alias gre@='grep'
 alias switch_gcc5='scl enable devtoolset-4 bash'
@@ -59,15 +71,20 @@ alias rsyncp='rsync -C --filter=":- .gitignore" -acv'
 
 case $- in
 *i*)
-source ~/.local/share/bash-abbrev-alias/abbrev-alias.plugin.bash
-abbrev-alias -c asu='aws sso login'
-abbrev-alias -ge B='$(git symbolic-ref --short HEAD 2>/dev/null)'
-abbrev-alias -c automerge='git push origin HEAD && gh pr-create --fill --draft && gh pr ready && gh pr-merge-personal && { git switch main || git switch master; } && git pull'
-abbrev-alias -c copilot='copilot --banner'
-abbrev-alias -c ask='claude --model haiku -p'
-abbrev-alias -c cd='z'
-command -v eza >/dev/null 2>&1 && abbrev-alias -c ls='eza'
-abbrev-alias -c histp='$($(history | peco || echo ''))'
+  abbrev_alias_plugin="$HOME/.local/share/bash-abbrev-alias/abbrev-alias.plugin.bash"
+  if [[ -f "$abbrev_alias_plugin" ]]; then
+    source "$abbrev_alias_plugin"
+  fi
+  if command -v abbrev-alias >/dev/null 2>&1; then
+    abbrev-alias -c asu='aws sso login'
+    abbrev-alias -ge B='$(git symbolic-ref --short HEAD 2>/dev/null)'
+    abbrev-alias -c automerge='git push origin HEAD && gh pr-create --fill --draft && gh pr ready && gh pr-merge-personal && { git switch main || git switch master; } && git pull'
+    abbrev-alias -c copilot='copilot --banner'
+    abbrev-alias -c ask='claude --model haiku -p'
+    abbrev-alias -c cd='z'
+    command -v eza >/dev/null 2>&1 && abbrev-alias -c ls='eza'
+    abbrev-alias -c histp='$($(history | peco || echo ''))'
+  fi
 ;;
 esac
 
@@ -85,9 +102,9 @@ function make() {
   PLAN_FILE="/var/tmp/tfplan_$(date +%Y%m%d).log"
 
   if [ "$1" = 'plan' ] || [ "$1" = 'apply' ]; then
-    date --iso-8601=seconds >> $PLAN_FILE
-    command make "$@" | rrtee $PLAN_FILE
-    echo -e "\n\n" >> $PLAN_FILE
+    date --iso-8601=seconds >> "$PLAN_FILE"
+    command make "$@" | rrtee "$PLAN_FILE"
+    echo -e "\n\n" >> "$PLAN_FILE"
     # sed -ire 's/ESC\[[0-9]+m//g' $PLAN_FILE
   else
     command make "$@"
@@ -96,10 +113,11 @@ function make() {
 export -f make
 
 function pds() {
-  ! which peco >/dev/null 2>&1 && echo 'please install peco' && return 1
-  local pushd_number=$(dirs -v | peco | perl -anE 'say $F[0]')
+  ! command -v peco >/dev/null 2>&1 && echo 'please install peco' && return 1
+  local pushd_number
+  pushd_number=$(dirs -v | peco | perl -anE 'say $F[0]')
   [[ -z $pushd_number ]] && return 1
-  pushd +$pushd_number
+  pushd +"$pushd_number"
   return $?
 }
 
@@ -122,25 +140,31 @@ function obsidian() {
   return "${PIPESTATUS[0]}"
 }
 
-# git-completion
-if [ ! -f $SCRIPT_DIR/.git-completion.bash ]; then
-  curl -sS -o $SCRIPT_DIR/.git-completion.bash https://raw.githubusercontent.com/git/git/master/contrib/completion/git-completion.bash
+# Git integrations
+if [[ ! -f "$SCRIPT_DIR/.git-completion.bash" ]]; then
+  if command -v curl >/dev/null 2>&1; then
+    curl -sS -o "$SCRIPT_DIR/.git-completion.bash" https://raw.githubusercontent.com/git/git/master/contrib/completion/git-completion.bash
+  fi
 fi
-if [ ! -f $SCRIPT_DIR/.git-prompt.sh ]; then
-  curl -sS -o $SCRIPT_DIR/.git-prompt.sh https://raw.githubusercontent.com/git/git/master/contrib/completion/git-prompt.sh
+if [[ ! -f "$SCRIPT_DIR/.git-prompt.sh" ]]; then
+  if command -v curl >/dev/null 2>&1; then
+    curl -sS -o "$SCRIPT_DIR/.git-prompt.sh" https://raw.githubusercontent.com/git/git/master/contrib/completion/git-prompt.sh
+  fi
 fi
 
-source $SCRIPT_DIR/.git-completion.bash
-source $SCRIPT_DIR/.git-prompt.sh
+[[ -f "$SCRIPT_DIR/.git-completion.bash" ]] && source "$SCRIPT_DIR/.git-completion.bash"
+[[ -f "$SCRIPT_DIR/.git-prompt.sh" ]] && source "$SCRIPT_DIR/.git-prompt.sh"
 
-# sync gh command
-$SCRIPT_DIR/gh/main.bash || true
+# Synchronize GitHub CLI aliases
+[[ -f "$SCRIPT_DIR/gh/main.bash" ]] && "$SCRIPT_DIR/gh/main.bash" || true
 
-complete -C '/usr/local/bin/aws_completer' aws
+if [[ $- == *i* && -x /usr/local/bin/aws_completer ]]; then
+  complete -C '/usr/local/bin/aws_completer' aws
+fi
 
 # diff-highlight
-if ! which diff-highlight >/dev/null; then
-  $SCRIPT_DIR/install-diff-highlight.bash || true
+if ! command -v diff-highlight >/dev/null 2>&1; then
+  "$SCRIPT_DIR/install-diff-highlight.bash" || true
 fi
 
 # The next line updates PATH for the Google Cloud SDK.
@@ -150,12 +174,12 @@ if [ -f "$HOME/dev/yes/google-cloud-sdk/path.bash.inc" ]; then . "$HOME/dev/yes/
 if [ -f "$HOME/dev/yes/google-cloud-sdk/completion.bash.inc" ]; then . "$HOME/dev/yes/google-cloud-sdk/completion.bash.inc"; fi
 
 # neobundle
-if [ ! -d ~/.vim/bundle/neobundle.vim ]; then
+if [[ ! -d "$HOME/.vim/bundle/neobundle.vim" ]] && command -v git >/dev/null 2>&1; then
   git clone https://github.com/Shougo/neobundle.vim ~/.vim/bundle/neobundle.vim
 fi
 
 # for WSL2 + Ubuntu 24.04, startup issues
-cat /etc/fstab | grep -q '# LABEL=cloudimg-rootfs' && sudo sed -i.bak 's|^LABEL=cloudimg-rootfs.*|# &|' /etc/fstab || true
+command grep -q '# LABEL=cloudimg-rootfs' /etc/fstab && sudo sed -i.bak 's|^LABEL=cloudimg-rootfs.*|# &|' /etc/fstab || true
 # sudo systemctl disable systemd-networkd
 
 ## Disable printer modules
@@ -169,22 +193,24 @@ fi
 ## Retrieved 2026-02-26, License - CC BY-SA 4.0
 export DISPLAY=$(ip route list default | awk '{print $3}'):0
 
-$SCRIPT_DIR/config-journald.bash || true
-$SCRIPT_DIR/create-asoundrc.bash || true
-source $SCRIPT_DIR/agents.bash || true
+"$SCRIPT_DIR/config-journald.bash" || true
+"$SCRIPT_DIR/create-asoundrc.bash" || true
+[[ -f "$SCRIPT_DIR/agents.bash" ]] && source "$SCRIPT_DIR/agents.bash"
 
 # Atuin
-. "$HOME/.atuin/bin/env"
+[[ -f "$HOME/.atuin/bin/env" ]] && source "$HOME/.atuin/bin/env"
 
 # --- #
 
-if [ -f $SCRIPT_DIR/main_local.bash ]; then
-  source $SCRIPT_DIR/main_local.bash
+if [[ -f "$SCRIPT_DIR/main_local.bash" ]]; then
+  source "$SCRIPT_DIR/main_local.bash"
 fi
 
 
-[[ -f ~/.bash-preexec.sh ]] && source ~/.bash-preexec.sh
-eval "$(atuin init bash --disable-up-arrow)"
+[[ -f "$HOME/.bash-preexec.sh" ]] && source "$HOME/.bash-preexec.sh"
+if command -v atuin >/dev/null 2>&1; then
+  eval "$(atuin init bash --disable-up-arrow)"
+fi
 
 # pnpm
 if [[ -n "$PNPM_HOME" ]]; then

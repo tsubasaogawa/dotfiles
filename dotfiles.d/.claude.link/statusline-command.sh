@@ -1,9 +1,8 @@
 #!/bin/bash
-# Claude Code ステータスライン スクリプト
 
-input=$(cat)
+command -v jq >/dev/null 2>&1 || exit 0
+input=$(< /dev/stdin)
 
-# --- カラーコード定義 (16 色 ANSI) ---
 RESET=$'\033[0m'
 C_RED=$'\033[31m'
 C_GREEN=$'\033[32m'
@@ -13,8 +12,6 @@ C_MAGENTA=$'\033[35m'
 C_BR_RED=$'\033[91m'
 C_BR_MAGENTA=$'\033[95m'
 
-# --- 必要なフィールドを 1 回の jq でまとめて取得 ---
-# 1 行 1 値で出力し個別に read（空値でもフィールドがずれないようにする）
 {
   read -r model
   read -r effort
@@ -41,10 +38,8 @@ C_BR_MAGENTA=$'\033[95m'
   ' <<<"$input"
 )
 
-# --- モデル名（判別できる範囲で短縮：" context)" → ")"）---
 model="${model/ context)/)}"
 
-# --- モデル系統ごとの色分け ---
 case "$model" in
   *Opus*)   model="${C_MAGENTA}${model}${RESET}" ;;
   *Sonnet*) model="${C_CYAN}${model}${RESET}" ;;
@@ -52,22 +47,18 @@ case "$model" in
   *Fable*)  model="${C_YELLOW}${model}${RESET}" ;;
 esac
 
-# --- 現在のディレクトリ (ディレクトリ名のみ表示) ---
 cwd_short="${cwd##*/}"
 [[ -z "$cwd_short" ]] && cwd_short="~"
 
-# --- Git ブランチ ---
 branch=""
 if [[ -n "$cwd" ]] && git -C "$cwd" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
   branch=$(git -C "$cwd" --no-optional-locks symbolic-ref --short HEAD 2>/dev/null)
 fi
 
-# --- 料金（セッション累計。Claude Code が算出する cost.total_cost_usd をそのまま使用）---
 cost=$(awk -v c="$cost_usd" 'BEGIN {
   if (c > 0 && c < 0.01) { printf "<$0.01" } else { printf "$%.2f", c }
 }')
 
-# --- コンテキスト使用率 (しきい値で色分け：50% 以上で黄、80% 以上で赤) ---
 ctx_str=""
 if [[ -n "$ctx_pct" ]]; then
   ctx_color=""
@@ -80,18 +71,17 @@ if [[ -n "$ctx_pct" ]]; then
   [[ -n "$ctx_color" ]] && ctx_str="${ctx_color}${ctx_str}${RESET}"
 fi
 
-# --- 組み立て ---
-# 配列を区切り文字で連結するヘルパー (join_by SEP ELEM...)
 join_by() {
-  local sep="$1"; shift
-  local out=""
-  for x in "$@"; do
-    if [[ -z "$out" ]]; then out="$x"; else out="${out}${sep}${x}"; fi
+  local separator="$1"
+  local result="$2"
+  shift 2
+
+  for value; do
+    result+="${separator}${value}"
   done
-  printf '%s' "$out"
+  printf '%s' "$result"
 }
 
-# --- レート制限の Usage (5 時間 / 週間) ---
 usage_str=""
 usage_items=()
 [[ -n "$five_h_pct" ]] && usage_items+=("$(printf "5h:%.0f%%" "$five_h_pct")")
@@ -118,7 +108,6 @@ parts+=("$cost")
 [[ -n "$ctx_str" ]] && parts+=("$ctx_str")
 [[ -n "$usage_str" ]] && parts+=("$usage_str")
 
-# モデル / effort / think / fast（カンマ区切りで 1 グループ）
 case "$effort" in
   low)    effort="${C_GREEN}${effort}${RESET}" ;;
   medium) effort="${C_YELLOW}${effort}${RESET}" ;;
@@ -137,8 +126,12 @@ mgroup=()
 [[ -n "$cwd_short" ]] && parts+=("$cwd_short")
 [[ -n "$branch" ]] && parts+=("$branch")
 
-# --- ペット (満腹度に応じて表情が変化。PostToolUse フックで満腹度が回復する) ---
-pet_str=$(python3 ~/.claude/scripts/pet_render.py 2>/dev/null)
+pet_script="$HOME/.claude/scripts/pet_render.py"
+if command -v python3 >/dev/null 2>&1 && [[ -f "$pet_script" ]]; then
+  pet_str=$(python3 "$pet_script" 2>/dev/null)
+else
+  pet_str=""
+fi
 [[ -n "$pet_str" ]] && parts+=("$pet_str")
 
 join_by " | " "${parts[@]}"

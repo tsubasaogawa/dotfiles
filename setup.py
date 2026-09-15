@@ -1,17 +1,13 @@
 #!/usr/bin/env python3
 
+"""Install dotfiles by linking managed entries into the user's home directory."""
+
 from pathlib import Path
+from typing import Iterator
 
 
 def create_symlink(src: Path, dest: Path) -> None:
-    """
-    Creates a symbolic link.
-
-    - If dest already points to src, nothing is done.
-    - If dest is a symlink, it will be overwritten.
-    - If dest is a file or directory, a backup will be created before creating the symlink.
-    - If dest does not exist, a new symlink will be created.
-    """
+    """Create or replace dest as a symbolic link to src."""
     if dest.is_symlink():
         if dest.readlink() == src:
             print(f"Already linked: {dest} -> {src}")
@@ -29,54 +25,60 @@ def create_symlink(src: Path, dest: Path) -> None:
     print(f"{action}: {dest} -> {src}")
 
 
-def main() -> None:
-    """
-    Executes the dotfiles setup.
-    """
-    dotfiles_dir = Path(__file__).parent.resolve() / "dotfiles.d"
-    home_dir = Path.home()
+def find_rc_files(dotfiles_dir: Path) -> Iterator[Path]:
+    """Yield top-level rc files managed directly in the home directory."""
+    yield from (path for path in sorted(dotfiles_dir.glob(".*rc")) if path.is_file())
 
-    create_symlink(dotfiles_dir, home_dir / ".dotfiles.d")
 
-    # Process .dotfiles.d/.*rc
-    for f in sorted(dotfiles_dir.glob(".*rc")):
-        if not f.is_file():
+def find_main_files(dotfiles_dir: Path) -> Iterator[tuple[Path, Path]]:
+    """Yield source and destination pairs for top-level *.d directories."""
+    for app_dir in sorted(dotfiles_dir.glob(".*.d")):
+        if not app_dir.is_dir():
             continue
-        create_symlink(f, home_dir / f.name)
+        main_file = next(iter(sorted(app_dir.glob("main.*"))), None)
+        if main_file is not None:
+            yield main_file, Path(app_dir.name.removesuffix(".d"))
 
-    # Process .dotfiles.d/.*.d/main.*
-    for d in sorted(dotfiles_dir.glob(".*.d")):
-        if not d.is_dir():
-            continue
-        main_file = next(iter(sorted(d.glob("main.*"))), None)
-        if main_file is None:
-            # Do nothing if main.* file is not found
-            continue
-        create_symlink(main_file, home_dir / d.name.removesuffix(".d"))
 
-    # Process .dotfiles.d/.config/*/
-    # Only the directories under it are linked, so ~/.config itself is left intact
+def find_config_dirs(dotfiles_dir: Path) -> Iterator[Path]:
+    """Yield managed directories below .config, never standalone files."""
     config_dir = dotfiles_dir / ".config"
     if config_dir.is_dir():
+        yield from (path for path in sorted(config_dir.iterdir()) if path.is_dir())
+
+
+def find_link_dirs(dotfiles_dir: Path) -> Iterator[Path]:
+    """Yield top-level *.link directories whose entries are linked individually."""
+    yield from (path for path in sorted(dotfiles_dir.glob(".*.link")) if path.is_dir())
+
+
+def install_dotfiles(dotfiles_dir: Path, home_dir: Path) -> None:
+    """Install every managed dotfile into home_dir."""
+    create_symlink(dotfiles_dir, home_dir / ".dotfiles.d")
+
+    for rc_file in find_rc_files(dotfiles_dir):
+        create_symlink(rc_file, home_dir / rc_file.name)
+
+    for main_file, destination_name in find_main_files(dotfiles_dir):
+        create_symlink(main_file, home_dir / destination_name)
+
+    config_entries = list(find_config_dirs(dotfiles_dir))
+    if config_entries:
         home_config_dir = home_dir / ".config"
         home_config_dir.mkdir(parents=True, exist_ok=True)
-        for d in sorted(config_dir.iterdir()):
-            if not d.is_dir():
-                continue
-            create_symlink(d, home_config_dir / d.name)
+        for config_entry in config_entries:
+            create_symlink(config_entry, home_config_dir / config_entry.name)
 
-    # Process .dotfiles.d/.*.link/
-    # Only the entries inside are linked, so ~/<name> itself is left intact.
-    # Use this for directories that also hold machine-local state, such as
-    # credentials or logs, that must not live inside the repository.
-    for d in sorted(dotfiles_dir.glob(".*.link")):
-        if not d.is_dir():
-            continue
-        target_dir = home_dir / d.name.removesuffix(".link")
+    for link_dir in find_link_dirs(dotfiles_dir):
+        target_dir = home_dir / link_dir.name.removesuffix(".link")
         target_dir.mkdir(parents=True, exist_ok=True)
-        for entry in sorted(d.iterdir()):
+        for entry in sorted(link_dir.iterdir()):
             create_symlink(entry, target_dir / entry.name)
 
+
+def main() -> None:
+    dotfiles_dir = Path(__file__).parent.resolve() / "dotfiles.d"
+    install_dotfiles(dotfiles_dir, Path.home())
     print("Dotfiles setup complete.")
 
 
