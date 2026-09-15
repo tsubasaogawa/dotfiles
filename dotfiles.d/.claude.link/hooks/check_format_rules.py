@@ -18,7 +18,6 @@ CODE_FENCE_RE = re.compile(r"```.*?```", re.DOTALL)
 INLINE_CODE_RE = re.compile(r"`[^`\n]*`")
 QUOTE_LINE_RE = re.compile(r"^\s*>.*$", re.MULTILINE)
 
-# このファイル自身がフックの検査対象になるため、絵文字はリテラルで書かず符号位置から組み立てる
 EMOJI_RANGES = (
     (0x1F300, 0x1F5FF),
     (0x1F600, 0x1F64F),
@@ -86,7 +85,6 @@ def collect_texts(tool_name: str, tool_input: dict) -> list[str]:
 
 
 def blank_out(match: re.Match) -> str:
-    # 位置を報告するため、除去ではなく同じ長さの空白に置き換えて字数を保つ
     return re.sub(r"[^\n]", " ", match.group(0))
 
 
@@ -97,7 +95,6 @@ def strip_code_spans(text: str) -> str:
 
 
 def strip_quote_lines(text: str) -> str:
-    # 引用ブロックは原文の転記であり、ルールの対象外とする
     return QUOTE_LINE_RE.sub(blank_out, text)
 
 

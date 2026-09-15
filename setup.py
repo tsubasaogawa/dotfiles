@@ -4,14 +4,7 @@ from pathlib import Path
 
 
 def create_symlink(src: Path, dest: Path) -> None:
-    """
-    Creates a symbolic link.
-
-    - If dest already points to src, nothing is done.
-    - If dest is a symlink, it will be overwritten.
-    - If dest is a file or directory, a backup will be created before creating the symlink.
-    - If dest does not exist, a new symlink will be created.
-    """
+    """Create or replace dest as a symbolic link to src."""
     if dest.is_symlink():
         if dest.readlink() == src:
             print(f"Already linked: {dest} -> {src}")
@@ -30,51 +23,39 @@ def create_symlink(src: Path, dest: Path) -> None:
 
 
 def main() -> None:
-    """
-    Executes the dotfiles setup.
-    """
     dotfiles_dir = Path(__file__).parent.resolve() / "dotfiles.d"
     home_dir = Path.home()
 
     create_symlink(dotfiles_dir, home_dir / ".dotfiles.d")
 
-    # Process .dotfiles.d/.*rc
-    for f in sorted(dotfiles_dir.glob(".*rc")):
-        if not f.is_file():
+    for rc_file in sorted(dotfiles_dir.glob(".*rc")):
+        if not rc_file.is_file():
             continue
-        create_symlink(f, home_dir / f.name)
+        create_symlink(rc_file, home_dir / rc_file.name)
 
-    # Process .dotfiles.d/.*.d/main.*
-    for d in sorted(dotfiles_dir.glob(".*.d")):
-        if not d.is_dir():
+    for app_dir in sorted(dotfiles_dir.glob(".*.d")):
+        if not app_dir.is_dir():
             continue
-        main_file = next(iter(sorted(d.glob("main.*"))), None)
+        main_file = next(iter(sorted(app_dir.glob("main.*"))), None)
         if main_file is None:
-            # Do nothing if main.* file is not found
             continue
-        create_symlink(main_file, home_dir / d.name.removesuffix(".d"))
+        create_symlink(main_file, home_dir / app_dir.name.removesuffix(".d"))
 
-    # Process .dotfiles.d/.config/*/
-    # Only the directories under it are linked, so ~/.config itself is left intact
     config_dir = dotfiles_dir / ".config"
     if config_dir.is_dir():
         home_config_dir = home_dir / ".config"
         home_config_dir.mkdir(parents=True, exist_ok=True)
-        for d in sorted(config_dir.iterdir()):
-            if not d.is_dir():
+        for config_entry in sorted(config_dir.iterdir()):
+            if not config_entry.is_dir():
                 continue
-            create_symlink(d, home_config_dir / d.name)
+            create_symlink(config_entry, home_config_dir / config_entry.name)
 
-    # Process .dotfiles.d/.*.link/
-    # Only the entries inside are linked, so ~/<name> itself is left intact.
-    # Use this for directories that also hold machine-local state, such as
-    # credentials or logs, that must not live inside the repository.
-    for d in sorted(dotfiles_dir.glob(".*.link")):
-        if not d.is_dir():
+    for link_dir in sorted(dotfiles_dir.glob(".*.link")):
+        if not link_dir.is_dir():
             continue
-        target_dir = home_dir / d.name.removesuffix(".link")
+        target_dir = home_dir / link_dir.name.removesuffix(".link")
         target_dir.mkdir(parents=True, exist_ok=True)
-        for entry in sorted(d.iterdir()):
+        for entry in sorted(link_dir.iterdir()):
             create_symlink(entry, target_dir / entry.name)
 
     print("Dotfiles setup complete.")

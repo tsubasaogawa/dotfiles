@@ -6,9 +6,8 @@ import time
 
 STATE_PATH = os.path.expanduser("~/.claude/pet-state.json")
 SLEEP_THRESHOLD_SEC = 5 * 60
-STALE_RUNNING_SEC = 60  # PostToolUse を取り逃した場合に「調べ中」で固まらないようにする保険
+STALE_RUNNING_SEC = 60
 
-# 正面向きと横向きのひよこをランダムに切り替えて首振りアニメーションにする
 CHICK_FRAMES = ["\U0001F424", "\U0001F425"]
 
 FRAMES_NORMAL = CHICK_FRAMES
