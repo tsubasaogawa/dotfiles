@@ -83,14 +83,8 @@ class TestSetup(unittest.TestCase):
         self.assertEqual(dest.lstat().st_ino, original_ino)
         self.assertFalse((self.home_dir / ".bashrc.bak").exists())
 
-    @patch("setup.Path.home")
-    @patch("setup.Path.resolve")
-    def test_main(self, mock_resolve, mock_home):
-        mock_home.return_value = self.home_dir
-        mock_resolve.return_value = self.test_dir
-
-        with patch("__main__.__file__", str(self.test_dir / "setup.py")):
-            setup.main()
+    def test_install_dotfiles(self):
+        setup.install_dotfiles(self.dotfiles_dir, self.home_dir)
 
         self.assertTrue((self.home_dir / ".bashrc").is_symlink())
         self.assertEqual(
@@ -143,41 +137,53 @@ class TestSetup(unittest.TestCase):
 
         self.assertFalse((self.home_dir / ".tool.link").exists())
 
-    @patch("setup.Path.home")
-    @patch("setup.Path.resolve")
-    def test_main_preserves_existing_config_dir(self, mock_resolve, mock_home):
-        mock_home.return_value = self.home_dir
-        mock_resolve.return_value = self.test_dir
+    def test_main_uses_the_standard_dotfiles_directory(self):
+        with (
+            patch.object(setup, "__file__", str(self.test_dir / "setup.py")),
+            patch.object(setup.Path, "home", return_value=self.home_dir),
+        ):
+            setup.main()
 
+        self.assertEqual(
+            os.readlink(self.home_dir / ".bashrc"),
+            str(self.dotfiles_dir / ".bashrc"),
+        )
+
+    def test_install_dotfiles_preserves_existing_config_dir(self):
         home_config = self.home_dir / ".config"
         unmanaged_file = home_config / "other_tool" / "settings.json"
         unmanaged_file.parent.mkdir(parents=True)
         unmanaged_file.write_text("keep me")
 
-        setup.main()
+        setup.install_dotfiles(self.dotfiles_dir, self.home_dir)
 
         self.assertFalse(home_config.is_symlink())
         self.assertEqual(unmanaged_file.read_text(), "keep me")
         self.assertTrue((home_config / "mise").is_symlink())
         self.assertFalse((self.home_dir / ".config.bak").exists())
 
-    @patch("setup.Path.home")
-    @patch("setup.Path.resolve")
-    def test_main_preserves_unmanaged_files_in_link_dir(self, mock_resolve, mock_home):
-        mock_resolve.return_value = self.test_dir
-        mock_home.return_value = self.home_dir
-
+    def test_install_dotfiles_preserves_unmanaged_files_in_link_dir(self):
         home_tool = self.home_dir / ".tool"
         credentials = home_tool / ".credentials.json"
         credentials.parent.mkdir(parents=True)
         credentials.write_text("secret")
 
-        setup.main()
+        setup.install_dotfiles(self.dotfiles_dir, self.home_dir)
 
         self.assertFalse(home_tool.is_symlink())
         self.assertEqual(credentials.read_text(), "secret")
         self.assertTrue((home_tool / "settings.json").is_symlink())
         self.assertFalse((self.home_dir / ".tool.bak").exists())
+
+    def test_discovery_rules_protect_config_files_and_link_directories(self):
+        self.assertEqual(
+            list(setup.find_config_dirs(self.dotfiles_dir)),
+            [self.dotfiles_dir / ".config" / "mise"],
+        )
+        self.assertEqual(
+            list(setup.find_link_dirs(self.dotfiles_dir)),
+            [self.dotfiles_dir / ".tool.link"],
+        )
 
 
 if __name__ == "__main__":

@@ -47,6 +47,31 @@ Run the following command to deploy the dotfiles automatically.
 $ ./setup.py
 ```
 
+## Optional Commands
+
+The shell configuration detects optional commands and initialization files before using them. If an optional command is not installed, its integration is skipped without a warning. This applies to tools such as `anyenv`, `pyenv`, `direnv`, `mise`, `atuin`, `zoxide`, `gh`, and shell completion helpers.
+
+Some existing startup tasks intentionally remain conditional on their managed files being absent. They can download Git completion files or Vim plugins, and some WSL maintenance scripts can call `sudo`.
+
+## Verification
+
+Run the following checks after changing the repository:
+
+```bash
+python3 -m unittest -v
+
+while IFS= read -r file; do
+  bash -n "$file"
+done < <(
+  rg --files --hidden \
+    -g '*.bash' -g '*.sh' \
+    -g '!node_modules/**' -g '!dist/**' -g '!build/**' \
+    -g '!.venv/**' -g '!.terraform/**' -g '!vendor/**'
+)
+```
+
+The Python test suite also loads `.bashrc.d/main.bash` with a temporary `HOME` and optional commands unavailable. It stubs the existing startup tasks that can use the network or `sudo`, so the verification does not change the host system.
+
 ## How to Add Your Own Dotfiles
 
 You can add your own configuration files to the `dotfiles.d/` directory and run `setup.py` to manage them.

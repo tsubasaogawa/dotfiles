@@ -5,6 +5,8 @@ import sys
 import tempfile
 import time
 
+from hook_utils import read_stdin_json
+
 PLAN_FILES_DIR = os.path.normpath(os.path.expanduser("~/.claude/plans"))
 
 AGENT_NAME = "format-rule-fixer"
@@ -149,9 +151,8 @@ def main() -> None:
     except Exception:
         pass
 
-    try:
-        data = json.load(sys.stdin)
-    except Exception:
+    data = read_stdin_json()
+    if not data:
         sys.exit(0)
 
     tool_name = data.get("tool_name", "")

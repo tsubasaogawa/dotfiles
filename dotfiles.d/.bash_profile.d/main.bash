@@ -5,10 +5,10 @@ if [ -f ~/.bashrc ]; then
 	. ~/.bashrc
 fi
 
-SCRIPT_FILE=$(readlink -f ${BASH_SOURCE[0]})
-SCRIPT_DIR=$(dirname $SCRIPT_FILE)
+SCRIPT_FILE=$(readlink -f "${BASH_SOURCE[0]}")
+SCRIPT_DIR=$(dirname "$SCRIPT_FILE")
 
-source $SCRIPT_DIR/aws_sso_session_expiry.bash
+[[ -f "$SCRIPT_DIR/aws_sso_session_expiry.bash" ]] && source "$SCRIPT_DIR/aws_sso_session_expiry.bash"
 
 # Prompt customization
 GIT_PS1_SHOWDIRTYSTATE=true

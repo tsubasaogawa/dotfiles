@@ -6,6 +6,8 @@ import os
 import sys
 import time
 
+from hook_utils import load_json_list, read_stdin_json, save_json_atomically
+
 HOOKS_DIR = os.path.dirname(os.path.abspath(__file__))
 GUIDELINES = os.path.join(HOOKS_DIR, "karpathy_guidelines.md")
 STATE_DIR = os.path.join(HOOKS_DIR, "state", "karpathy_guard")
@@ -47,7 +49,9 @@ def prune_state():
 
 
 def main():
-    data = json.load(sys.stdin)
+    data = read_stdin_json()
+    if not data:
+        return
 
     if data.get("agent_type") == AGENT_NAME:
         return
@@ -61,11 +65,7 @@ def main():
         return
 
     path = state_path(data.get("session_id"))
-    try:
-        with open(path) as f:
-            notified = set(json.load(f))
-    except (OSError, ValueError):
-        notified = set()
+    notified = set(load_json_list(path))
 
     if file_path in notified:
         emit({"hookSpecificOutput": {
@@ -78,9 +78,7 @@ def main():
         guidelines = f.read()
 
     notified.add(file_path)
-    os.makedirs(STATE_DIR, exist_ok=True)
-    with open(path, "w") as f:
-        json.dump(sorted(notified), f)
+    save_json_atomically(path, sorted(notified))
 
     emit({"hookSpecificOutput": {
         "hookEventName": "PreToolUse",

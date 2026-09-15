@@ -1,6 +1,7 @@
 #!/bin/bash
 
-input=$(cat)
+command -v jq >/dev/null 2>&1 || exit 0
+input=$(< /dev/stdin)
 
 RESET=$'\033[0m'
 C_RED=$'\033[31m'
@@ -125,7 +126,12 @@ mgroup=()
 [[ -n "$cwd_short" ]] && parts+=("$cwd_short")
 [[ -n "$branch" ]] && parts+=("$branch")
 
-pet_str=$(python3 ~/.claude/scripts/pet_render.py 2>/dev/null)
+pet_script="$HOME/.claude/scripts/pet_render.py"
+if command -v python3 >/dev/null 2>&1 && [[ -f "$pet_script" ]]; then
+  pet_str=$(python3 "$pet_script" 2>/dev/null)
+else
+  pet_str=""
+fi
 [[ -n "$pet_str" ]] && parts+=("$pet_str")
 
 join_by " | " "${parts[@]}"

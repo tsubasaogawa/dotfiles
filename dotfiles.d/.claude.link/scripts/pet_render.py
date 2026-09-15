@@ -1,8 +1,13 @@
 #!/usr/bin/env python3
-import json
 import os
 import random
+import sys
 import time
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "hooks"))
+
+from hook_utils import load_json
 
 STATE_PATH = os.path.expanduser("~/.claude/pet-state.json")
 SLEEP_THRESHOLD_SEC = 5 * 60
@@ -16,11 +21,7 @@ FRAMES_SLEEPING = [c + "\U0001F4A4" for c in CHICK_FRAMES]
 
 
 def load():
-    try:
-        with open(STATE_PATH) as f:
-            return json.load(f)
-    except (OSError, json.JSONDecodeError):
-        return {}
+    return load_json(STATE_PATH, {})
 
 
 def main():
