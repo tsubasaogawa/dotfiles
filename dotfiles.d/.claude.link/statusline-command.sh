@@ -1,7 +1,7 @@
 #!/bin/bash
 
 command -v jq >/dev/null 2>&1 || exit 0
-input=$(< /dev/stdin)
+input=$(cat)
 
 RESET=$'\033[0m'
 C_RED=$'\033[31m'
@@ -73,8 +73,10 @@ fi
 
 join_by() {
   local separator="$1"
-  local result="$2"
-  shift 2
+  shift
+  (( $# == 0 )) && return
+  local result="$1"
+  shift
 
   for value; do
     result+="${separator}${value}"
