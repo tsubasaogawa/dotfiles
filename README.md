@@ -33,6 +33,11 @@ The script processes files based on the following rules:
     - Only the directories themselves are linked, so your existing `~/.config` is never replaced.
     - For example, `dotfiles.d/.config/mise` will be linked as `~/.config/mise`.
     - `~/.config` is created if it does not exist. Files placed directly under `dotfiles.d/.config/` are ignored.
+4.  Entries inside a directory ending with `.link` within `dotfiles.d/`.
+    - Only the entries inside are linked, so the destination directory itself is never replaced.
+    - The destination is the directory name with the `.link` suffix removed.
+    - For example, `dotfiles.d/.claude.link/settings.json` will be linked as `~/.claude/settings.json`.
+    - The destination directory is created if it does not exist.
 
 ## Usage
 
@@ -110,3 +115,30 @@ dotfiles
     $ ./setup.py
     ```
 4.  A symbolic link to `dotfiles.d/.config/mise` will be created as `~/.config/mise`.
+
+### Case 4: A Directory That Also Holds Machine-Local State (e.g., `~/.claude`)
+
+Some tools keep their configuration and their runtime state in the same directory. `~/.claude` holds
+committable rules and agent definitions next to credentials, session logs, and conversation history.
+Linking the directory itself would pull that state into the repository, so the script links only the
+entries inside a `*.link` directory and leaves the destination directory as a real directory.
+
+1.  Create a directory named after the destination plus a `.link` suffix inside `dotfiles.d/`.
+2.  Place only the files you want to commit inside it.
+    ```
+    dotfiles
+    └── dotfiles.d
+        └── .claude.link        <-- Create this directory
+            ├── CLAUDE.md
+            ├── settings.json
+            └── hooks
+                └── hook.py
+    ```
+3.  Run the script.
+    ```bash
+    $ ./setup.py
+    ```
+4.  `~/.claude` stays a real directory, and each entry inside it becomes a symbolic link.
+    - Anything the tool writes into `~/.claude` that is not listed above stays out of the repository.
+    - Files a linked script writes relative to itself (for example a `hooks/state/` cache) do land in
+      the repository, so add them to `.gitignore`.

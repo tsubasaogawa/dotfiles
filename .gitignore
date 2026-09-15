@@ -6,3 +6,9 @@ dotfiles.d/**/*_local.*
 **/.git-completion.*sh
 **/.git-prompt.sh
 __pycache__
+
+# Runtime state written by hooks linked into ~/.claude
+dotfiles.d/.claude.link/hooks/state/
+
+# Claude Code worktrees
+.claude/worktrees/

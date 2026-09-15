@@ -31,6 +31,10 @@ class TestSetup(unittest.TestCase):
         (self.dotfiles_dir / ".config" / "mise").mkdir()
         (self.dotfiles_dir / ".config" / "mise" / "config.toml").touch()
         (self.dotfiles_dir / ".config" / "starship.toml").touch()
+        (self.dotfiles_dir / ".tool.link").mkdir()
+        (self.dotfiles_dir / ".tool.link" / "settings.json").touch()
+        (self.dotfiles_dir / ".tool.link" / "hooks").mkdir()
+        (self.dotfiles_dir / ".tool.link" / "hooks" / "hook.py").touch()
 
     def tearDown(self):
         """Clean up temporary directories after each test."""
@@ -137,6 +141,26 @@ class TestSetup(unittest.TestCase):
         # Files directly under .config are not linked
         self.assertFalse((home_config / "starship.toml").exists())
 
+        # ~/.tool itself must stay a real directory
+        home_tool = self.home_dir / ".tool"
+        self.assertTrue(home_tool.is_dir())
+        self.assertFalse(home_tool.is_symlink())
+
+        # Both files and directories inside .tool.link are linked
+        self.assertTrue((home_tool / "settings.json").is_symlink())
+        self.assertEqual(
+            os.readlink(home_tool / "settings.json"),
+            str(self.dotfiles_dir / ".tool.link" / "settings.json"),
+        )
+        self.assertTrue((home_tool / "hooks").is_symlink())
+        self.assertEqual(
+            os.readlink(home_tool / "hooks"),
+            str(self.dotfiles_dir / ".tool.link" / "hooks"),
+        )
+
+        # .tool.link must not be picked up by the .*.d rule as ~/.tool.link
+        self.assertFalse((self.home_dir / ".tool.link").exists())
+
     @patch("setup.Path.home")
     @patch("setup.Path.resolve")
     def test_main_preserves_existing_config_dir(self, mock_resolve, mock_home):
@@ -155,6 +179,25 @@ class TestSetup(unittest.TestCase):
         self.assertEqual(unmanaged_file.read_text(), "keep me")
         self.assertTrue((home_config / "mise").is_symlink())
         self.assertFalse((self.home_dir / ".config.bak").exists())
+
+    @patch("setup.Path.home")
+    @patch("setup.Path.resolve")
+    def test_main_preserves_unmanaged_files_in_link_dir(self, mock_resolve, mock_home):
+        """Test that machine-local state in ~/.tool survives the setup."""
+        mock_resolve.return_value = self.test_dir
+        mock_home.return_value = self.home_dir
+
+        home_tool = self.home_dir / ".tool"
+        credentials = home_tool / ".credentials.json"
+        credentials.parent.mkdir(parents=True)
+        credentials.write_text("secret")
+
+        setup.main()
+
+        self.assertFalse(home_tool.is_symlink())
+        self.assertEqual(credentials.read_text(), "secret")
+        self.assertTrue((home_tool / "settings.json").is_symlink())
+        self.assertFalse((self.home_dir / ".tool.bak").exists())
 
 
 if __name__ == "__main__":

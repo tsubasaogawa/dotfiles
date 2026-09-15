@@ -1,0 +1,221 @@
+{
+  "awsAuthRefresh": "aws sso login",
+  "env": {
+    "DISABLE_UPDATES": "1",
+    "CLAUDE_CODE_SUBAGENT_MODEL": "opus"
+  },
+  "attribution": {
+    "commit": "",
+    "pr": ""
+  },
+  "permissions": {
+    "allow": [
+      "WebSearch",
+      "WebFetch(domain:aws.amazon.com)",
+      "WebFetch(domain:*.aws.amazon.com)",
+      "WebFetch(domain:dev.mysql.com)",
+      "WebFetch(domain:platform.claude.com)",
+      "Read",
+      "Cd(~/dev/*)",
+      "Bash(aws * describe-*)",
+      "Bash(aws * list-*)",
+      "Bash(aws * get-*)",
+      "Edit(/tmp/**)",
+      "Edit(/var/tmp/**)",
+      "Bash(rg *)",
+      "Bash(export *)",
+      "Bash(ripgrep *)",
+      "Bash(bat *)",
+      "Bash(sd *)",
+      "Bash(fd *)",
+      "Bash(xxd *)",
+      "Bash(for *)",
+      "Bash(done)",
+      "Bash(awk *)",
+      "Bash(file *)",
+      "Bash(uniq *)",
+      "Bash(command *)",
+      "Bash(realpath *)",
+      "Bash(readlink *)",
+      "Bash(basename *)",
+      "Bash(dirname *)",
+      "Bash(type *)",
+      "Bash(whoami *)",
+      "Bash(hostname *)",
+      "Bash(uname *)",
+      "Bash(date *)",
+      "Bash(du *)",
+      "Bash(df *)",
+      "Bash(ps *)",
+      "Bash(printenv *)",
+      "Bash(nl *)",
+      "Bash(tree *)",
+      "Bash(obsidian *)",
+      "Bash(Obsidian.com *)",
+      "Bash(bee *)",
+      "Bash(python3 --version)",
+      "Bash(python3 -V)",
+      "Bash(python3 -m json.tool *)",
+      "Bash(python3 -m py_compile *)",
+      "Bash(python3 -m pydoc *)",
+      "Bash(python3 ~/.claude/skills/*)",
+      "Bash(python3 .claude/skills/*)",
+      "Bash(python3 ~/.copilot/skills/*)",
+      "Bash(git fetch *)",
+      "Bash(git ls-remote *)",
+      "Bash(git rev-parse *)",
+      "Bash(git merge-base *)",
+      "Bash(gh pr view *)",
+      "Bash(gh pr list *)",
+      "Bash(gh pr diff *)",
+      "Bash(gh api repos*)",
+      "Bash(git --no-pager diff *)",
+      "Bash(terraform plan *)",
+      "Bash(terraform plan)",
+      "Bash(terraform version)",
+      "Bash(git symbolic-ref *)",
+      "Bash(git grep *)",
+      "Bash(tfenv list*)"
+    ],
+    "deny": [
+      "Bash(*cat *.tfvars*)",
+      "Bash(*grep *.tfvars*)",
+      "Bash(*terraform workspace delete*)",
+      "Bash(chmod 777 *)",
+      "Bash(aws * attach-*)",
+      "Bash(aws * create-*)",
+      "Bash(aws * delete-*)",
+      "Bash(aws * detach-*)",
+      "Bash(aws * modify-*)",
+      "Bash(aws * put-*)",
+      "Bash(aws * remove-*)",
+      "Bash(aws * run-*)",
+      "Bash(aws * set-*)",
+      "Bash(aws * stop-*)",
+      "Bash(aws * terminate-*)",
+      "Bash(aws * update-*)",
+      "Bash(aws cloudformation deploy*)",
+      "Bash(aws cloudformation execute-change-set*)",
+      "Bash(aws s3 mb *)",
+      "Bash(aws s3 rb *)",
+      "Bash(aws s3 rm *)",
+      "Bash(aws secretsmanager get-secret-value*)",
+      "Bash(aws ssm get-parameter*)",
+      "Bash(gcloud auth activate-service-account *)",
+      "Bash(gcloud compute instances delete *)",
+      "Bash(gcloud iam service-accounts delete *)",
+      "Bash(gcloud projects delete *)",
+      "Bash(gcloud services disable *)",
+      "Bash(gcloud sql instances delete *)",
+      "Bash(gh pr merge*)",
+      "Bash(gh api repos/*/replies *)",
+      "Bash(gsutil rb:*)",
+      "Bash(gsutil rm:*)",
+      "Bash(make apply*)",
+      "Bash(Obsidian.com create *)",
+      "Bash(rm -f *)",
+      "Bash(rm -rf *)",
+      "Bash(sam deploy*)",
+      "Bash(sudo:*)",
+      "Bash(terraform apply*)",
+      "Bash(terraform destroy*)",
+      "Bash(terraform state *)",
+      "Edit(//**/*.tfstate)",
+      "Edit(//**/*.tfstate.backup)",
+      "Edit(//**/*.tfvars)",
+      "Edit(//**/*.tfvars.json)",
+      "Edit(//**/.terraform.lock.hcl)",
+      "Edit(//**/.terraform/*)",
+      "Read(//**/*.tfvars)",
+      "Read(//**/*.tfvars.json)",
+      "Read(**/.env*)",
+      "Read(**/.ssh/**)",
+      "Read(**/id_ed25519)",
+      "Read(**/id_rsa)",
+      "Read(.env*)",
+      "Edit(**/.env*)",
+      "Edit(**/secrets/**)",
+      "Edit(.env*)"
+    ],
+    "defaultMode": "acceptEdits"
+  },
+  "model": "opus[1m]",
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Write|Edit|MultiEdit|NotebookEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python \"$HOME/.claude/hooks/check_format_rules.py\""
+          },
+          {
+            "type": "command",
+            "command": "python3 \"$HOME/.claude/hooks/karpathy_script_guard.py\""
+          }
+        ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$HOME/.claude/hooks/pet_feed.py\""
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$HOME/.claude/hooks/pet_feed.py\""
+          }
+        ]
+      }
+    ]
+  },
+  "enableArtifact": false,
+  "statusLine": {
+    "type": "command",
+    "command": "bash ~/.claude/statusline-command.sh"
+  },
+  "enabledPlugins": {
+    "codex@openai-codex": true
+  },
+  "extraKnownMarketplaces": {
+    "openai-codex": {
+      "source": {
+        "source": "github",
+        "repo": "openai/codex-plugin-cc"
+      }
+    }
+  },
+  "outputStyle": "Concise",
+  "language": "Japanese",
+  "effortLevel": "medium",
+  "modelSettings": {
+    "claude-sonnet-5": {
+      "effortLevel": "high"
+    },
+    "claude-opus-5": {
+      "effortLevel": "high"
+    },
+    "claude-fable-5": {
+      "effortLevel": "medium"
+    },
+    "claude-fable-5-1": {
+      "effortLevel": "medium"
+    }
+  },
+  "awaySummaryEnabled": false,
+  "theme": "dark",
+  "editorMode": "normal",
+  "remoteControlAtStartup": false,
+  "autoMode": {
+    "soft_deny": [
+      "$defaults",
+      "WebFetch/API calls to https://*.atlassian.net publish/update endpoints when overwriting an existing page — confluence-publisher skill requires explicit user confirmation before overwrite"
+    ]
+  }
+}

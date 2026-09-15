@@ -65,6 +65,18 @@ def main() -> None:
                 continue
             create_symlink(d, home_config_dir / d.name)
 
+    # Process .dotfiles.d/.*.link/
+    # Only the entries inside are linked, so ~/<name> itself is left intact.
+    # Use this for directories that also hold machine-local state, such as
+    # credentials or logs, that must not live inside the repository.
+    for d in sorted(dotfiles_dir.glob(".*.link")):
+        if not d.is_dir():
+            continue
+        target_dir = home_dir / d.name.removesuffix(".link")
+        target_dir.mkdir(parents=True, exist_ok=True)
+        for entry in sorted(d.iterdir()):
+            create_symlink(entry, target_dir / entry.name)
+
     print("Dotfiles setup complete.")
 
 
