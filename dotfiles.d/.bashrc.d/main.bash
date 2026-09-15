@@ -23,8 +23,6 @@ PATH="$HOME/.local/lib/shellspec/bin:$PATH"
 export PATH
 
 # Environment variables
-# dotenvx 自体が $HOME/.local/bin にあるため、PATH を通した直後に読み込む。
-# $NVM_DIR や $PNPM_HOME は以降の初期化で参照する。
 if command -v dotenvx >/dev/null; then
   dotfiles_dir="${SCRIPT_DIR}/.."
   if [[ -f "${dotfiles_dir}/.env" ]]; then
@@ -38,23 +36,35 @@ fi
 [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
 
 # Version managers and shell integrations
-if command -v anyenv >/dev/null 2>&1; then
-  eval "$(anyenv init -)"
-fi
+# Claude Code から呼ばれたシェルでは init に約 4 秒かかるため shims の PATH 追加のみで済ませる
+if [[ -n "$CLAUDECODE" ]]; then
+  for _env in goenv pyenv rbenv tfenv; do
+    [[ -d "$HOME/.anyenv/envs/$_env" ]] || continue
+    export "${_env^^}_ROOT=$HOME/.anyenv/envs/$_env"
+    PATH="$HOME/.anyenv/envs/$_env/shims:$HOME/.anyenv/envs/$_env/bin:$PATH"
+  done
+  unset _env
+  [[ -d "$HOME/.local/share/mise/shims" ]] && PATH="$HOME/.local/share/mise/shims:$PATH"
+  export PATH
+else
+  if command -v anyenv >/dev/null 2>&1; then
+    eval "$(anyenv init -)"
+  fi
 
-# GOPATH は goenv が選択中バージョンに合わせて設定するため anyenv init の後で使う
-[[ -n "$GOPATH" ]] && export PATH="$GOPATH/bin:$PATH"
+  # GOPATH は goenv が選択中バージョンに合わせて設定するため anyenv init の後で使う
+  [[ -n "$GOPATH" ]] && export PATH="$GOPATH/bin:$PATH"
 
-if command -v pyenv >/dev/null 2>&1; then
-  eval "$(pyenv virtualenv-init -)"
+  if command -v pyenv >/dev/null 2>&1; then
+    eval "$(pyenv virtualenv-init -)"
+  fi
+  if command -v direnv >/dev/null 2>&1; then
+    eval "$(direnv hook bash)"
+  fi
+  if command -v mise >/dev/null 2>&1; then
+    eval "$(mise activate bash)"
+  fi
+  command -v zoxide >/dev/null 2>&1 && eval "$(zoxide init bash)"
 fi
-if command -v direnv >/dev/null 2>&1; then
-  eval "$(direnv hook bash)"
-fi
-if command -v mise >/dev/null 2>&1; then
-  eval "$(mise activate bash)"
-fi
-command -v zoxide >/dev/null 2>&1 && eval "$(zoxide init bash)"
 
 # pyenv 解決後の python を指す必要があるため .env ではなくここで定義する
 if command -v python >/dev/null 2>&1; then
@@ -152,11 +162,11 @@ if [[ ! -f "$SCRIPT_DIR/.git-prompt.sh" ]]; then
   fi
 fi
 
-[[ -f "$SCRIPT_DIR/.git-completion.bash" ]] && source "$SCRIPT_DIR/.git-completion.bash"
-[[ -f "$SCRIPT_DIR/.git-prompt.sh" ]] && source "$SCRIPT_DIR/.git-prompt.sh"
-
-# Synchronize GitHub CLI aliases
-[[ -f "$SCRIPT_DIR/gh/main.bash" ]] && "$SCRIPT_DIR/gh/main.bash" || true
+if [[ -z "$CLAUDECODE" ]]; then
+  [[ -f "$SCRIPT_DIR/.git-completion.bash" ]] && source "$SCRIPT_DIR/.git-completion.bash"
+  [[ -f "$SCRIPT_DIR/.git-prompt.sh" ]] && source "$SCRIPT_DIR/.git-prompt.sh"
+  [[ -f "$SCRIPT_DIR/gh/main.bash" ]] && "$SCRIPT_DIR/gh/main.bash" || true
+fi
 
 if [[ $- == *i* && -x /usr/local/bin/aws_completer ]]; then
   complete -C '/usr/local/bin/aws_completer' aws
