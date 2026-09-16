@@ -36,8 +36,8 @@ fi
 [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
 
 # Version managers and shell integrations
-# Claude Code から呼ばれたシェルでは init に約 4 秒かかるため shims の PATH 追加のみで済ませる
-if [[ -n "$CLAUDECODE" ]]; then
+# Claude Code / Codex から呼ばれたシェルでは init に約 4 秒かかるため shims の PATH 追加のみで済ませる
+if [[ -n "$CLAUDECODE" || -n "$_CODEX_SHELL" ]]; then
   for _env in goenv pyenv rbenv tfenv; do
     [[ -d "$HOME/.anyenv/envs/$_env" ]] || continue
     export "${_env^^}_ROOT=$HOME/.anyenv/envs/$_env"
@@ -162,7 +162,7 @@ if [[ ! -f "$SCRIPT_DIR/.git-prompt.sh" ]]; then
   fi
 fi
 
-if [[ -z "$CLAUDECODE" ]]; then
+if [[ -z "$CLAUDECODE" && -z "$_CODEX_SHELL" ]]; then
   [[ -f "$SCRIPT_DIR/.git-completion.bash" ]] && source "$SCRIPT_DIR/.git-completion.bash"
   [[ -f "$SCRIPT_DIR/.git-prompt.sh" ]] && source "$SCRIPT_DIR/.git-prompt.sh"
   [[ -f "$SCRIPT_DIR/gh/main.bash" ]] && "$SCRIPT_DIR/gh/main.bash" || true
