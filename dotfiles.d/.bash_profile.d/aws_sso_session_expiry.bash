@@ -19,10 +19,12 @@ _aws_sso_notify() {
 
 # print the longest remaining minutes across every token cache
 # (aws-sso-util and `aws sso login` may keep separate caches; both must be
-# expired before we report an expired session). returns 1 when unknown.
+# expired before we report an expired session). AWS CLI access tokens are
+# refreshable, so use the registration expiry for those caches instead of
+# warning on every short-lived access-token refresh. returns 1 when unknown.
 _aws_sso_max_remaining_minutes() {
   local now=$1
-  local file expires_at expires_epoch remaining max=""
+  local file expires_at registration_expires_at expires_epoch remaining max=""
 
   for file in "$_AWS_SSO_CACHE_DIR"/*.json; do
     [[ -f $file ]] || continue
@@ -31,6 +33,10 @@ _aws_sso_max_remaining_minutes() {
     command grep -q '"accessToken"' "$file" || continue
 
     expires_at=$(command sed -n 's/.*"expiresAt" *: *"\([^"]*\)".*/\1/p' "$file")
+    if command grep -q '"refreshToken"' "$file"; then
+      registration_expires_at=$(command sed -n 's/.*"registrationExpiresAt" *: *"\([^"]*\)".*/\1/p' "$file")
+      [[ -n $registration_expires_at ]] && expires_at=$registration_expires_at
+    fi
     [[ -z $expires_at ]] && continue
 
     expires_epoch=$(date -d "$expires_at" +%s 2>/dev/null)
