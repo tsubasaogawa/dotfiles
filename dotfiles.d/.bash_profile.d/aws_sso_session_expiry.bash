@@ -55,12 +55,12 @@ _aws_sso_max_remaining_minutes() {
 _aws_sso_login_prompt() {
   local answer
 
-  if [[ ! -t 0 ]]; then
+  if [[ ! -t 0 || -n "$ANTIGRAVITY" || -n "$VSCODE_PID" || -n "$TERM_PROGRAM" || -n "$CLAUDECODE" ]]; then
     _aws_sso_notify 31 'session expired. run: aws sso login'
     return
   fi
 
-  read -r -p $'\e[31m[aws-sso] session expired. run `aws sso login`? [y/N]: \e[0m' answer || {
+  read -t 3 -r -p $'\e[31m[aws-sso] session expired. run `aws sso login`? [y/N]: \e[0m' answer || {
     printf '\n'
     return
   }
