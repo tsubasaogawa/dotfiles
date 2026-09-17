@@ -22,7 +22,7 @@ PATH="$HOME/.local/lib/shellspec/bin:$PATH"
 
 export PATH
 
-# 非対話型シェル（IDE バックグラウンド実行やスクリプト）はここで終了
+# Exit early for non-interactive shells (IDE background jobs and scripts)
 [[ $- == *i* ]] || return 0
 
 # Environment variables
@@ -39,7 +39,7 @@ fi
 [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
 
 # Version managers and shell integrations
-# Claude Code / Codex から呼ばれたシェルでは init に約 4 秒かかるため shims の PATH 追加のみで済ませる
+# For Claude Code and Codex shells, skip the ~4-second init and add only shims to PATH
 if [[ -n "$CLAUDECODE" || -n "$_CODEX_SHELL" || -n "$ANTIGRAVITY" || -n "$GEMINI_CLI" ]]; then
   for _env in goenv pyenv rbenv tfenv; do
     [[ -d "$HOME/.anyenv/envs/$_env" ]] || continue
@@ -54,7 +54,7 @@ else
     eval "$(anyenv init -)"
   fi
 
-  # GOPATH は goenv が選択中バージョンに合わせて設定するため anyenv init の後で使う
+  # goenv sets GOPATH for the selected version, so add it after anyenv init
   [[ -n "$GOPATH" ]] && export PATH="$GOPATH/bin:$PATH"
 
   if command -v pyenv >/dev/null 2>&1; then
@@ -69,7 +69,7 @@ else
   command -v zoxide >/dev/null 2>&1 && eval "$(zoxide init bash)"
 fi
 
-# pyenv 解決後の python を指す必要があるため .env ではなくここで定義する
+# Define this here, rather than in .env, so it points to pyenv's resolved Python
 if command -v python >/dev/null 2>&1; then
   export PIPX_DEFAULT_PYTHON="$(command -v python)"
 fi
@@ -146,9 +146,9 @@ function wsl_interop_error_fix() {
 }
 
 function obsidian() {
-  # Obsidian.exe は GUI サブシステムのバイナリなので、WSL からパイプ経由で呼ぶと
-  # 標準出力が握り潰され終了コードも壊れる。コンソールサブシステムのスタブである
-  # Obsidian.com を使う。https://github.com/kepano/obsidian-skills/issues/93
+  # Obsidian.exe is a GUI-subsystem binary; piping it from WSL corrupts stdout and the exit status.
+  # Use Obsidian.com, the console-subsystem stub, instead.
+  # https://github.com/kepano/obsidian-skills/issues/93
   Obsidian.com "$@" 2>&1 | tr -d '\r'
   return "${PIPESTATUS[0]}"
 }

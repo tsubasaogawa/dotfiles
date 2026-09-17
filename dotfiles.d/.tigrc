@@ -1,23 +1,23 @@
-# U で pull
+# U to pull from the remote
 bind generic U ?git pull %(remote)
 
-# P で remote への push
+# P to push to the remote
 bind generic P ?git push -u %(remote) %(repo:head)
 
-# B でブランチを作成してそのブランチに移動 (checkout -b)
+# B to create a branch and switch to it (checkout -b)
 bind main B      ?git checkout -b "%(prompt Enter branch name: )" %(branch)
 bind refs B      ?git checkout -b "%(prompt Enter branch name: )" %(branch)
 bind main <Esc>b ?git checkout -b "%(prompt Enter branch name: )" %(commit)
 
-# + で commit amend
+# + to amend the current commit
 bind generic + !git commit --amend --allow-empty
 
-# ファイル削除
+# Delete files
 bind refs   D ?git branch -D %(branch)
 bind status D ?git clean -d -f -- %(file)
 bind tree   D ?git rm %(file)
 
-# グラフ表示の文字化け対応
+# Keep graph rendering free of mojibake
 set line-graphics = ascii
 bind status D ?rm %(file)
 bind refs M ?git merge %(branch)
@@ -26,7 +26,7 @@ set diff-highlight = true
 color diff-header default magenta
 color diff-chunk  black   white
 
-# 行数表示
+# Show line numbers
 set line-graphics = utf-8
 set pager-view  = line-number:yes,interval=1 text
 set stage-view  = line-number:yes,interval=1 text
