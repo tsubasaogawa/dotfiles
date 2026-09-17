@@ -22,6 +22,9 @@ PATH="$HOME/.local/lib/shellspec/bin:$PATH"
 
 export PATH
 
+# 非対話型シェル（IDE バックグラウンド実行やスクリプト）はここで終了
+[[ $- == *i* ]] || return 0
+
 # Environment variables
 if command -v dotenvx >/dev/null; then
   dotfiles_dir="${SCRIPT_DIR}/.."
@@ -37,7 +40,7 @@ fi
 
 # Version managers and shell integrations
 # Claude Code / Codex から呼ばれたシェルでは init に約 4 秒かかるため shims の PATH 追加のみで済ませる
-if [[ -n "$CLAUDECODE" || -n "$_CODEX_SHELL" ]]; then
+if [[ -n "$CLAUDECODE" || -n "$_CODEX_SHELL" || -n "$ANTIGRAVITY" || -n "$GEMINI_CLI" ]]; then
   for _env in goenv pyenv rbenv tfenv; do
     [[ -d "$HOME/.anyenv/envs/$_env" ]] || continue
     export "${_env^^}_ROOT=$HOME/.anyenv/envs/$_env"
