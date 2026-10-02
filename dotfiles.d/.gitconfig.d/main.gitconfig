@@ -41,3 +41,5 @@
   helper =
   helper = !gh auth git-credential
 
+[init]
+	defaultBranch = main

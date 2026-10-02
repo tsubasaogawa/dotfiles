@@ -60,7 +60,6 @@
       "Bash(python3 -m pydoc *)",
       "Bash(python3 ~/.claude/skills/*)",
       "Bash(python3 .claude/skills/*)",
-      "Bash(python3 ~/.copilot/skills/*)",
       "Bash(git fetch *)",
       "Bash(git ls-remote *)",
       "Bash(git rev-parse *)",
@@ -139,7 +138,7 @@
     ],
     "defaultMode": "acceptEdits"
   },
-  "model": "opus[1m]",
+  "model": "opus",
   "hooks": {
     "PreToolUse": [
       {
@@ -181,13 +180,20 @@
     "command": "bash ~/.claude/statusline-command.sh"
   },
   "enabledPlugins": {
-    "codex@openai-codex": true
+    "codex@openai-codex": true,
+    "ponytail@ponytail": true
   },
   "extraKnownMarketplaces": {
     "openai-codex": {
       "source": {
         "source": "github",
         "repo": "openai/codex-plugin-cc"
+      }
+    },
+    "ponytail": {
+      "source": {
+        "source": "github",
+        "repo": "DietrichGebert/ponytail"
       }
     }
   },
@@ -205,6 +211,9 @@
       "effortLevel": "medium"
     },
     "claude-fable-5-1": {
+      "effortLevel": "medium"
+    },
+    "claude-opus-5-5": {
       "effortLevel": "medium"
     }
   },

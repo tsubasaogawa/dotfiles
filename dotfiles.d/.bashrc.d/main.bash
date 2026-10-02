@@ -10,7 +10,7 @@ SCRIPT_DIR=$(dirname "$SCRIPT_FILE")
 
 # PATH
 PATH="$PATH:$HOME/bin"
-PATH="$HOME/.anyenv/bin:$PATH"
+PATH="$HOME/.tfenv/bin:$PATH"
 PATH="$HOME/.cargo/bin:$PATH"
 PATH=$PATH:$HOME/.pulumi/bin
 PATH="/opt/go/bin:$PATH"
@@ -23,7 +23,8 @@ PATH="$HOME/.local/lib/shellspec/bin:$PATH"
 export PATH
 
 # Exit early for non-interactive shells (IDE background jobs and scripts)
-[[ $- == *i* ]] || return 0
+# AI coding tools run non-interactive shells but still need the env vars below
+[[ $- == *i* || -n "$CLAUDECODE" || -n "$_CODEX_SHELL" || -n "$ANTIGRAVITY" || -n "$GEMINI_CLI" ]] || return 0
 
 # Environment variables
 if command -v dotenvx >/dev/null; then
@@ -35,31 +36,12 @@ if command -v dotenvx >/dev/null; then
   fi
 fi
 
-[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
-[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
-
 # Version managers and shell integrations
 # For Claude Code and Codex shells, skip the ~4-second init and add only shims to PATH
 if [[ -n "$CLAUDECODE" || -n "$_CODEX_SHELL" || -n "$ANTIGRAVITY" || -n "$GEMINI_CLI" ]]; then
-  for _env in goenv pyenv rbenv tfenv; do
-    [[ -d "$HOME/.anyenv/envs/$_env" ]] || continue
-    export "${_env^^}_ROOT=$HOME/.anyenv/envs/$_env"
-    PATH="$HOME/.anyenv/envs/$_env/shims:$HOME/.anyenv/envs/$_env/bin:$PATH"
-  done
-  unset _env
   [[ -d "$HOME/.local/share/mise/shims" ]] && PATH="$HOME/.local/share/mise/shims:$PATH"
   export PATH
 else
-  if command -v anyenv >/dev/null 2>&1; then
-    eval "$(anyenv init -)"
-  fi
-
-  # goenv sets GOPATH for the selected version, so add it after anyenv init
-  [[ -n "$GOPATH" ]] && export PATH="$GOPATH/bin:$PATH"
-
-  if command -v pyenv >/dev/null 2>&1; then
-    eval "$(pyenv virtualenv-init -)"
-  fi
   if command -v direnv >/dev/null 2>&1; then
     eval "$(direnv hook bash)"
   fi
@@ -69,7 +51,7 @@ else
   command -v zoxide >/dev/null 2>&1 && eval "$(zoxide init bash)"
 fi
 
-# Define this here, rather than in .env, so it points to pyenv's resolved Python
+# Define this here, rather than in .env, so it points to mise's resolved Python
 if command -v python >/dev/null 2>&1; then
   export PIPX_DEFAULT_PYTHON="$(command -v python)"
 fi
@@ -92,7 +74,6 @@ case $- in
     abbrev-alias -c asu='aws sso login'
     abbrev-alias -ge B='$(git symbolic-ref --short HEAD 2>/dev/null)'
     abbrev-alias -c automerge='git push origin HEAD && gh pr-create --fill --draft && gh pr ready && gh pr-merge-personal && { git switch main || git switch master; } && git pull'
-    abbrev-alias -c copilot='copilot --banner'
     abbrev-alias -c ask='claude --model haiku -p'
     abbrev-alias -c cd='z'
     command -v eza >/dev/null 2>&1 && abbrev-alias -c ls='eza'
@@ -176,7 +157,7 @@ if [[ $- == *i* && -x /usr/local/bin/aws_completer ]]; then
 fi
 
 # diff-highlight
-if ! command -v diff-highlight >/dev/null 2>&1; then
+if [[ ! -x "$(command -v diff-highlight)" ]]; then
   "$SCRIPT_DIR/install-diff-highlight.bash" || true
 fi
 
