@@ -1,0 +1,52 @@
+model_reasoning_effort = "medium"
+developer_instructions = """
+調査において、次のディレクトリは明示指定がない限り調査対象から外す:
+  - node_modules, dist, build, .venv, .terraform, vendor
+また、検索コマンドには必ず除外条件を付ける。
+"""
+sandbox_mode = "workspace-write"
+
+[sandbox_workspace_write]
+network_access = true
+
+[shell_environment_policy]
+set = {
+  _CODEX_SHELL = "1"
+}
+
+[features.network_proxy]
+enabled = true
+allow_local_binding = true
+
+[features.network_proxy.domains]
+"**.amazonaws.com" = "allow"
+
+[projects."/home/t_ogawa/dev/dotfiles"]
+trust_level = "trusted"
+
+[tui]
+status_line = [
+  "model-with-reasoning",
+  "context-remaining",
+  "git-branch",
+  "used-tokens",
+  "total-input-tokens",
+  "total-output-tokens",
+  "five-hour-limit",
+  "weekly-limit",
+  "current-dir",
+]
+pet = "rocky"
+screen_reader_detection_done = true
+
+[desktop]
+followUpQueueMode = "queue"
+
+[plugins."browser@openai-bundled"]
+enabled = true
+
+[plugins."visualize@openai-bundled"]
+enabled = true
+
+[features]
+js_repl = false
