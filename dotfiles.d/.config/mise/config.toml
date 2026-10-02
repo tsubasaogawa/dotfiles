@@ -12,12 +12,18 @@ fd = "latest"
 fzf = "latest"
 gcloud = "latest"
 gh = "latest"
+go = "1.22.0"
 node = "25.2.1"
 pnpm = "latest"
 podman = "latest"
+python = "3.12"
 rg = "latest"
 ripgrep = "latest"
+ruby = "3.3.5"
 sd = "latest"
 usage = "latest"
 uv = "latest"
 zoxide = "latest"
+
+[settings]
+idiomatic_version_file_enable_tools = ["go", "python", "ruby"]

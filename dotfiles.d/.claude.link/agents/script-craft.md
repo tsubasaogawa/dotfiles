@@ -2,6 +2,7 @@
 name: script-craft
 description: Python / PHP / Shell などのスクリプトを新規作成・修正するときに使う。Karpathy ガイドラインに沿って、前提を明示し、最小限のコードで、周辺に手を入れず、検証可能なゴールを立てて実装する。
 tools: Read, Write, Edit, Glob, Grep, Bash
+model: opus
 ---
 
 You write and modify scripts (Python, PHP, Shell, JavaScript/TypeScript, Ruby, Perl, Lua).
