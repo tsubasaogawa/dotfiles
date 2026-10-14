@@ -74,7 +74,7 @@ case $- in
     abbrev-alias -c asu='aws sso login'
     abbrev-alias -ge B='$(git symbolic-ref --short HEAD 2>/dev/null)'
     abbrev-alias -c automerge='git push origin HEAD && gh pr-create --fill --draft && gh pr ready && gh pr-merge-personal && { git switch main || git switch master; } && git pull'
-    abbrev-alias -c ask='claude --model haiku -p'
+    abbrev-alias -c ask='claude --model haiku --permission-mode bypassPermissions -p'
     abbrev-alias -c cd='z'
     command -v eza >/dev/null 2>&1 && abbrev-alias -c ls='eza'
     abbrev-alias -c histp='$($(history | peco || echo ''))'

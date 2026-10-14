@@ -56,8 +56,6 @@
       "Bash(python3 --version)",
       "Bash(python3 -V)",
       "Bash(python3 -m json.tool *)",
-      "Bash(python3 -m py_compile *)",
-      "Bash(python3 -m pydoc *)",
       "Bash(python3 ~/.claude/skills/*)",
       "Bash(python3 .claude/skills/*)",
       "Bash(git fetch *)",
@@ -136,7 +134,7 @@
       "Edit(**/secrets/**)",
       "Edit(.env*)"
     ],
-    "defaultMode": "acceptEdits"
+    "defaultMode": "auto"
   },
   "model": "opus",
   "hooks": {
