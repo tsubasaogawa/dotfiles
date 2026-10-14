@@ -1,13 +1,17 @@
 model_reasoning_effort = "medium"
-developer_instructions = """
-調査において、次のディレクトリは明示指定がない限り調査対象から外す:
-  - node_modules, dist, build, .venv, .terraform, vendor
-また、検索コマンドには必ず除外条件を付ける。
-"""
-sandbox_mode = "workspace-write"
+developer_instructions = ""
+default_permissions = "workspace-write-public-network"
+model = "openai.gpt-6.1-sol"
 
-[sandbox_workspace_write]
-network_access = true
+[permissions.workspace-write-public-network]
+description = "Workspace writes with public network access"
+extends = ":workspace"
+
+[permissions.workspace-write-public-network.network]
+enabled = true
+
+[permissions.workspace-write-public-network.network.domains]
+"*" = "allow"
 
 [shell_environment_policy]
 set = {
