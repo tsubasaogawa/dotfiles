@@ -2,8 +2,14 @@
 
 """Install dotfiles by linking managed entries into the user's home directory."""
 
+import subprocess
 from pathlib import Path
 from typing import Iterator
+
+GIT_CLEAN_FILTERS: dict[str, str] = {
+    "codex-trust": "awk 'BEGIN{top=1} /^\\[/{top=0; skip = ($0 ~ /^\\[(\\[skills\\.config|projects\\.|hooks\\.state)/)} !skip && !(top && /^(model|model_reasoning_effort) = /)'",
+    "claude-settings": "jq 'del(.modelSettings, .autoMode.environment)'",
+}
 
 
 def create_symlink(src: Path, dest: Path) -> None:
@@ -76,9 +82,20 @@ def install_dotfiles(dotfiles_dir: Path, home_dir: Path) -> None:
             create_symlink(entry, target_dir / entry.name)
 
 
+def register_git_filters(repo_dir: Path) -> None:
+    """Register git filters referenced by .gitattributes in repo_dir."""
+    for name, command in GIT_CLEAN_FILTERS.items():
+        subprocess.run(
+            ["git", "-C", str(repo_dir), "config", f"filter.{name}.clean", command],
+            check=True,
+        )
+        print(f"Registered git filter: {name}")
+
+
 def main() -> None:
     dotfiles_dir = Path(__file__).parent.resolve() / "dotfiles.d"
     install_dotfiles(dotfiles_dir, Path.home())
+    register_git_filters(Path(__file__).parent.resolve())
     print("Dotfiles setup complete.")
 
 

@@ -5,7 +5,7 @@ import shutil
 import tempfile
 import unittest
 from pathlib import Path
-from unittest.mock import patch
+from unittest.mock import call, patch
 
 import setup
 
@@ -141,12 +141,45 @@ class TestSetup(unittest.TestCase):
         with (
             patch.object(setup, "__file__", str(self.test_dir / "setup.py")),
             patch.object(setup.Path, "home", return_value=self.home_dir),
+            patch.object(setup.subprocess, "run"),
         ):
             setup.main()
 
         self.assertEqual(
             os.readlink(self.home_dir / ".bashrc"),
             str(self.dotfiles_dir / ".bashrc"),
+        )
+
+    def test_register_git_filters(self):
+        with patch.object(setup.subprocess, "run") as mock_run:
+            setup.register_git_filters(self.test_dir)
+
+        self.assertEqual(
+            mock_run.call_args_list,
+            [
+                call(
+                    [
+                        "git",
+                        "-C",
+                        str(self.test_dir),
+                        "config",
+                        "filter.codex-trust.clean",
+                        "awk 'BEGIN{top=1} /^\\[/{top=0; skip = ($0 ~ /^\\[(\\[skills\\.config|projects\\.|hooks\\.state)/)} !skip && !(top && /^(model|model_reasoning_effort) = /)'",
+                    ],
+                    check=True,
+                ),
+                call(
+                    [
+                        "git",
+                        "-C",
+                        str(self.test_dir),
+                        "config",
+                        "filter.claude-settings.clean",
+                        "jq 'del(.modelSettings, .autoMode.environment)'",
+                    ],
+                    check=True,
+                ),
+            ],
         )
 
     def test_install_dotfiles_preserves_existing_config_dir(self):
