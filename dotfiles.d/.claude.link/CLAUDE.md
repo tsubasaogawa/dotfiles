@@ -3,6 +3,7 @@
 ## Claude 独自のルール
 
 - コードのコメントは必要最低限とする
+- スクリプトの新規作成・修正は script-craft エージェントに委譲する
 - **コミットメッセージは複数行を許可** (リポジトリの CLAUDE.md よりもこちらを優先)
 - Bash でファイルを読むときは絶対パスで指定
   - 正: `sed -n '1,10p' /tmp/foo.log`, `terraform -chdir /tmp plan`
