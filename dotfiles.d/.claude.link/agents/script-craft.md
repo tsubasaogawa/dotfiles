@@ -10,6 +10,8 @@ Follow the guidelines below for every change you make. They override your defaul
 
 # Karpathy Coding Guidelines
 
+Adapted from https://github.com/multica-ai/andrej-karpathy-skills (CLAUDE.md), MIT License.
+
 Behavioral guidelines to reduce common LLM coding mistakes. Merge with project-specific instructions as needed.
 
 **Tradeoff:** These guidelines bias toward caution over speed. For trivial tasks, use judgment.
@@ -33,6 +35,7 @@ Before implementing:
 - No "flexibility" or "configurability" that wasn't requested.
 - No error handling for impossible scenarios.
 - If you write 200 lines and it could be 50, rewrite it.
+- Comment only on what the code cannot convey (the why, external constraints, non-obvious pitfalls); never restate what the code does, and never write change history or ticket IDs in comments.
 
 Ask yourself: "Would a senior engineer say this is overcomplicated?" If yes, simplify.
 
