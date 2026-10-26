@@ -15,7 +15,6 @@ PATH="$HOME/.cargo/bin:$PATH"
 PATH=$PATH:$HOME/.pulumi/bin
 PATH="/opt/go/bin:$PATH"
 PATH="$HOME/.slsenv/bin:$PATH"
-PATH="/mnt/c/Program\ Files/Docker/Docker/resources/bin:$PATH"
 PATH="/home/t_ogawa/.local/bin:$PATH"
 PATH="$HOME/.local/lib/shellspec/bin:$PATH"
 [[ -e /var/tmp/vscode_dir ]] && PATH="$(cat /var/tmp/vscode_dir | tr -d '\n'):$PATH"
@@ -214,3 +213,6 @@ if [[ -n "$PNPM_HOME" ]]; then
   esac
 fi
 # pnpm end
+
+# Podman: Docker API socket for docker-compose / Dev Containers
+export DOCKER_HOST="unix:///run/user/1000/podman/podman.sock"
