@@ -13,12 +13,19 @@ AGENT_NAME = "format-rule-fixer"
 PAYLOAD_DIR = os.path.join(tempfile.gettempdir(), "claude_format_rule_payloads")
 EXCERPT_RADIUS = 30
 
+# Markdown の 1 行の上限 (文字数)。natural-japanese の整形規範と同じ値にそろえる
+LINE_LIMIT = 180
+MARKDOWN_SUFFIXES = (".md", ".markdown")
+
 FULLWIDTH_OPEN = chr(0xFF08)
 FULLWIDTH_CLOSE = chr(0xFF09)
 
 CODE_FENCE_RE = re.compile(r"```.*?```", re.DOTALL)
 INLINE_CODE_RE = re.compile(r"`[^`\n]*`")
 QUOTE_LINE_RE = re.compile(r"^\s*>.*$", re.MULTILINE)
+FRONTMATTER_RE = re.compile(r"\A---\n.*?\n---\n", re.DOTALL)
+# 行長の検査から外す行: 表、引用、URL を含む行
+LINE_LIMIT_SKIP_RE = re.compile(r"^\s*(\||>)|https?://")
 
 EMOJI_RANGES = (
     (0x1F300, 0x1F5FF),
@@ -58,6 +65,11 @@ SPACING_MESSAGE = (
     "半角スペースを入れてください"
     " (例: \"GitHub リポジトリ 1\")"
 )
+LINE_LIMIT_MESSAGE = (
+    "1 行が {0} 文字を超えています。".format(LINE_LIMIT)
+    + "文ごとに改行するか、箇条書きを 1 文 1 項目の入れ子に分けてください"
+    " (frontmatter、コードブロック、表、引用、URL を含む行は対象外)"
+)
 
 AGENT_MESSAGE_TEMPLATE = (
     "修正は自分で行わず、Agent ツールで subagent_type=\"{agent}\" を起動してください。"
@@ -72,6 +84,10 @@ def is_plan_file(file_path: str) -> bool:
         return False
     normalized = os.path.normpath(os.path.abspath(os.path.expanduser(file_path)))
     return normalized == PLAN_FILES_DIR or normalized.startswith(PLAN_FILES_DIR + os.sep)
+
+
+def is_markdown(file_path: str) -> bool:
+    return bool(file_path) and file_path.lower().endswith(MARKDOWN_SUFFIXES)
 
 
 def collect_texts(tool_name: str, tool_input: dict) -> list[str]:
@@ -112,7 +128,24 @@ def excerpt(text: str, start: int, end: int) -> str:
     return text[head:tail].replace("\n", "\\n")
 
 
-def find_violations(text: str) -> list[tuple[str, list[str]]]:
+def find_long_lines(text: str) -> list[str]:
+    """LINE_LIMIT を超える行を返す。frontmatter とコードブロックは空白に置き換えて長さ 0 にし、
+    表、引用、URL を含む行は読み飛ばす。Edit の断片でも、断片の 1 行が上限を超えていれば
+    ファイル上の行はそれ以上の長さなので誤検出にはならない"""
+    blanked = FRONTMATTER_RE.sub(blank_out, text)
+    blanked = CODE_FENCE_RE.sub(blank_out, blanked)
+    spots = []
+    for number, (line, original) in enumerate(zip(blanked.split("\n"), text.split("\n")), 1):
+        length = len(line.rstrip())
+        if length <= LINE_LIMIT or LINE_LIMIT_SKIP_RE.search(line):
+            continue
+        spots.append(
+            "L{0} ({1} 文字) {2}...".format(number, length, original[: EXCERPT_RADIUS * 2])
+        )
+    return spots
+
+
+def find_violations(text: str, markdown: bool = True) -> list[tuple[str, list[str]]]:
     quoted_stripped = strip_quote_lines(text)
     checked = strip_code_spans(quoted_stripped)
 
@@ -128,6 +161,11 @@ def find_violations(text: str) -> list[tuple[str, list[str]]]:
         ]
         if spots:
             found.append((message, spots))
+
+    if markdown:
+        spots = find_long_lines(text)
+        if spots:
+            found.append((LINE_LIMIT_MESSAGE, spots))
     return found
 
 
@@ -157,15 +195,16 @@ def main() -> None:
 
     tool_name = data.get("tool_name", "")
     tool_input = data.get("tool_input", {})
+    file_path = tool_input.get("file_path", "")
 
-    if is_plan_file(tool_input.get("file_path", "")):
+    if is_plan_file(file_path):
         sys.exit(0)
 
     texts = collect_texts(tool_name, tool_input)
     grouped: dict[str, list[str]] = {}
     for index, text in enumerate(texts):
         prefix = "" if len(texts) == 1 else "edits[{0}] ".format(index)
-        for message, spots in find_violations(text):
+        for message, spots in find_violations(text, markdown=is_markdown(file_path)):
             grouped.setdefault(message, []).extend(prefix + s for s in spots)
 
     if not grouped:
