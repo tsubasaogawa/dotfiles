@@ -1,6 +1,7 @@
 # --- AWS SSO session expiry check ---
-
-[[ $- == *i* ]] || return 0
+# functions are defined in every shell so that ~/.claude/hooks/aws_sso_guard.py
+# can source this file and call _aws_sso_max_remaining_minutes. only the
+# PROMPT_COMMAND registration at the bottom is limited to interactive shells.
 
 _AWS_SSO_CACHE_DIR="${HOME}/.aws/sso/cache"
 _AWS_SSO_CHECK_INTERVAL=300 # seconds between checks
@@ -18,10 +19,11 @@ _aws_sso_notify() {
 }
 
 # print the longest remaining minutes across every token cache
-# (aws-sso-util and `aws sso login` may keep separate caches; both must be
-# expired before we report an expired session). AWS CLI access tokens are
-# refreshable, so use the registration expiry for those caches instead of
-# warning on every short-lived access-token refresh. returns 1 when unknown.
+# (`aws sso login` keeps one cache per start URL or sso-session; all of them
+# must be expired before we report an expired session). tokens that carry a
+# refreshToken (sso-session profiles) are refreshed by the AWS CLI, so use the
+# registration expiry for those caches instead of warning on every
+# short-lived access-token refresh. returns 1 when unknown.
 _aws_sso_max_remaining_minutes() {
   local now=$1
   local file expires_at registration_expires_at expires_epoch remaining max=""
@@ -93,6 +95,8 @@ _aws_sso_expiry_prompt() {
     _aws_sso_notify 33 "session expires in ${remaining} min"
   fi
 }
+
+[[ $- == *i* ]] || return 0
 
 if [[ ${PROMPT_COMMAND-} != *_aws_sso_expiry_prompt* ]]; then
   PROMPT_COMMAND="_aws_sso_expiry_prompt${PROMPT_COMMAND:+; $PROMPT_COMMAND}"
