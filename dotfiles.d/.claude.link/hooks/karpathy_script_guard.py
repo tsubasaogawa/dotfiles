@@ -16,6 +16,7 @@ STATE_MAX_AGE = 7 * 24 * 60 * 60
 SCRIPT_EXTS = {
     ".py", ".pyi", ".php", ".sh", ".bash", ".zsh",
     ".js", ".mjs", ".cjs", ".ts", ".rb", ".pl", ".lua",
+    ".tf", ".tfvars",
 }
 
 AGENT_NAME = "script-craft"
