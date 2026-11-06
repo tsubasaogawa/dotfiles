@@ -1,7 +1,5 @@
-model_reasoning_effort = "medium"
 developer_instructions = ""
 default_permissions = "workspace-write-public-network"
-model = "openai.gpt-6.1-sol"
 
 [permissions.workspace-write-public-network]
 description = "Workspace writes with public network access"
@@ -24,9 +22,6 @@ allow_local_binding = true
 
 [features.network_proxy.domains]
 "**.amazonaws.com" = "allow"
-
-[projects."/home/t_ogawa/dev/dotfiles"]
-trust_level = "trusted"
 
 [tui]
 status_line = [

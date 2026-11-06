@@ -1,0 +1,2 @@
+dotfiles.d/.codex.link/config.toml filter=codex-trust
+dotfiles.d/.claude.link/settings.json filter=claude-settings
