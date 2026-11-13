@@ -16,6 +16,8 @@ EXCERPT_RADIUS = 30
 # Markdown の 1 行の上限 (文字数)。natural-japanese の整形規範と同じ値にそろえる
 LINE_LIMIT = 180
 MARKDOWN_SUFFIXES = (".md", ".markdown")
+# openwork Vault の作業場。行長と全角カッコの検査を外す (2026-11-11 ユーザー指示)
+WORK_DIR_NAME = "02_Work"
 
 FULLWIDTH_OPEN = chr(0xFF08)
 FULLWIDTH_CLOSE = chr(0xFF09)
@@ -48,6 +50,9 @@ JP = "[぀-ヿ㐀-䶿一-鿿豈-﫿]"
 ALNUM = r"[A-Za-z0-9]"
 SPACING_RE = re.compile(JP + ALNUM + "|" + ALNUM + JP)
 FULLWIDTH_PAREN_RE = re.compile("[" + FULLWIDTH_OPEN + FULLWIDTH_CLOSE + "]")
+# "#3、" のように番号の直後に ASCII 以外の文字が続くと、Obsidian はその文字までを含めてタグとして扱う。
+# 直前が英数字、&、#、/ のもの (識別子、文字参照、URL のアンカー) と、直後が ASCII のもの (色コードなど) は対象外
+NUMERIC_TAG_RE = re.compile(r"(?<![A-Za-z0-9_&#/])#\d+(?=[^\x00-\x7F\s])")
 
 FULLWIDTH_PAREN_MESSAGE = (
     "全角カッコ" + FULLWIDTH_OPEN + FULLWIDTH_CLOSE
@@ -64,6 +69,11 @@ SPACING_MESSAGE = (
     "日本語テキストと英単語・数字の間には"
     "半角スペースを入れてください"
     " (例: \"GitHub リポジトリ 1\")"
+)
+NUMERIC_TAG_MESSAGE = (
+    "#番号 の直後に全角文字が続いています。"
+    "Obsidian がタグとして扱うため、番号の後に半角スペースを入れてください"
+    " (例: \"#3、#6\" → \"#3 、#6\"。引用行も対象、frontmatter とコードは対象外)"
 )
 LINE_LIMIT_MESSAGE = (
     "1 行が {0} 文字を超えています。".format(LINE_LIMIT)
@@ -88,6 +98,12 @@ def is_plan_file(file_path: str) -> bool:
 
 def is_markdown(file_path: str) -> bool:
     return bool(file_path) and file_path.lower().endswith(MARKDOWN_SUFFIXES)
+
+
+def is_work_note(file_path: str) -> bool:
+    if not file_path:
+        return False
+    return WORK_DIR_NAME in os.path.normpath(file_path).replace("\\", "/").split("/")
 
 
 def collect_texts(tool_name: str, tool_input: dict) -> list[str]:
@@ -145,16 +161,22 @@ def find_long_lines(text: str) -> list[str]:
     return spots
 
 
-def find_violations(text: str, markdown: bool = True) -> list[tuple[str, list[str]]]:
+def find_violations(
+    text: str, markdown: bool = True, work_note: bool = False
+) -> list[tuple[str, list[str]]]:
+    """work_note が True (02_Work のノート) なら全角カッコと行長の検査を外す"""
     quoted_stripped = strip_quote_lines(text)
     checked = strip_code_spans(quoted_stripped)
 
-    found = []
-    for message, pattern, target in (
-        (FULLWIDTH_PAREN_MESSAGE, FULLWIDTH_PAREN_RE, quoted_stripped),
+    rules = [
         (EMOJI_MESSAGE, EMOJI_RE, checked),
         (SPACING_MESSAGE, SPACING_RE, checked),
-    ):
+    ]
+    if not work_note:
+        rules.insert(0, (FULLWIDTH_PAREN_MESSAGE, FULLWIDTH_PAREN_RE, quoted_stripped))
+
+    found = []
+    for message, pattern, target in rules:
         spots = [
             "{0} {1}".format(locate(text, m.start()), excerpt(text, m.start(), m.end()))
             for m in pattern.finditer(target)
@@ -163,7 +185,16 @@ def find_violations(text: str, markdown: bool = True) -> list[tuple[str, list[st
             found.append((message, spots))
 
     if markdown:
-        spots = find_long_lines(text)
+        # 引用行 (callout) の中でもタグになるので、引用行は消さずに frontmatter とコードだけを外す
+        tag_target = strip_code_spans(FRONTMATTER_RE.sub(blank_out, text))
+        spots = [
+            "{0} {1}".format(locate(text, m.start()), excerpt(text, m.start(), m.end()))
+            for m in NUMERIC_TAG_RE.finditer(tag_target)
+        ]
+        if spots:
+            found.append((NUMERIC_TAG_MESSAGE, spots))
+
+        spots = [] if work_note else find_long_lines(text)
         if spots:
             found.append((LINE_LIMIT_MESSAGE, spots))
     return found
@@ -204,7 +235,9 @@ def main() -> None:
     grouped: dict[str, list[str]] = {}
     for index, text in enumerate(texts):
         prefix = "" if len(texts) == 1 else "edits[{0}] ".format(index)
-        for message, spots in find_violations(text, markdown=is_markdown(file_path)):
+        for message, spots in find_violations(
+            text, markdown=is_markdown(file_path), work_note=is_work_note(file_path)
+        ):
             grouped.setdefault(message, []).extend(prefix + s for s in spots)
 
     if not grouped:
